@@ -1,0 +1,5 @@
+Criando planilhas de Cadastro e Estoque separadas
+
+Tinha que fazer uma função de atualizar cadastro
+
+XML está funcionado para ler a matriz e comparar com cadastro
