@@ -1,5 +1,10 @@
 Criando planilhas de Cadastro e Estoque separadas
 
-Tinha que fazer uma função de atualizar cadastro
+Criando icones de edição e remoção para planilha
 
-XML está funcionado para ler a matriz e comparar com cadastro
+Elaborando pasta resources
+
+Necessário cria função de atualizar cadastro
+	Lembrar de usar Range.Replace
+
+XMLScripts está funcionado para ler XML, gravar em matriz e comparar com cadastro
