@@ -4,7 +4,7 @@ Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} cadForm
    ClientHeight    =   5040
    ClientLeft      =   108
    ClientTop       =   456
-   ClientWidth     =   6780
+   ClientWidth     =   8124
    OleObjectBlob   =   "cadForm.frx":0000
    StartUpPosition =   1  'CenterOwner
 End
@@ -74,8 +74,8 @@ End Sub
 ' Botao que cancela a operacao de cadastro/atualizacao de produto
 Private Sub cancelBtn_Click()
 
-    ' Se atualizando um produto, reseta o formulario
-    If (cadCheck) Then
+    ' Se atualizando um produto e não é cadastro rapido, reseta o formulario
+    If (cadCheck And Not cadFast) Then
         Call resetForm
     Else ' Senao, fecha o formulario
         Unload Me
@@ -92,7 +92,7 @@ End Sub
 ' Procedimento ao preencher o codigo de barras no formulario
 Private Sub box1_Exit(ByVal Cancel As MSForms.ReturnBoolean)
     
-    If (r) Then Exit Sub
+    If (r Or cadCheck) Then Exit Sub
     r = True
     
     If (box1 = "") Then
@@ -145,7 +145,7 @@ End Sub
 ' Procedimento ao preencher o codigo interno no formulario
 Private Sub box2_Exit(ByVal Cancel As MSForms.ReturnBoolean)
     
-    If (r) Then Exit Sub
+    If (r Or cadCheck) Then Exit Sub
     r = True
     
     If (box2 = "") Then
@@ -197,4 +197,26 @@ End Sub
 
 Private Sub box4_Exit(ByVal Cancel As MSForms.ReturnBoolean)
     p = False
+End Sub
+
+Private Sub UserForm_Initialize()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim cllr As String
+    Dim rw As Integer
+    
+    Set ws = ActiveSheet
+    Set tbl = ws.ListObjects(1)
+    cllr = Application.Caller
+    
+    If (cllr Like "edit_*") Then
+        rw = Right(cllr, Len(cllr) - InStr(1, cllr, "_"))
+        Set pRng = tbl.ListRows(rw).Range
+        Call preenchecadForm(pRng)
+    End If
+    cadFast = True
+    With Sheets("Estoque").ListObjects(1)
+        boxE = .ListRows(rw).Range(1, .ListColumns.Count - 1)
+    End With
+    
 End Sub

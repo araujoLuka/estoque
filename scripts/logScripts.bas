@@ -46,8 +46,8 @@ Sub logout()
         If (ws.Name = "Acesso") Then
             ws.Visible = xlSheetVisible
             ws.Activate
-            ws.OLEObjects("TextBox1").Object = ""
-            ws.OLEObjects("TextBox2").Object = ""
+            ws.OLEObjects("TextBox1").Object.Value = ""
+            ws.OLEObjects("TextBox2").Object.Value = ""
             ws.Shapes("logginStyle").Line.Visible = msoFalse
         Else
             ws.Visible = xlSheetVeryHidden

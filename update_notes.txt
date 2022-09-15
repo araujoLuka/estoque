@@ -1,0 +1,35 @@
+* Anotações de Atualizações Realizadas *
+
+Planilha de "Controle"
+-> 100% separada da planilha de "Estoque"
+-> Coluna de "Limite de Estoque" implementada
+-> Icones de controle incluidos
+-> Icone de edição funcionando para planilha de "Estoque"
+	- Leia notas de "Atualização de Cadastro" para mais informações
+
+Planilha de "Estoque"
+-> Refeita e organizada
+-> Novas funcionalidades:
+	- Coluna de Status para produtos
+	- Identificação para produtos com estoque baixo
+	- Destaque na linha da tabela quando uma é celula selecionada
+
+Atualização de Cadastro
+-> Procedimento implementado utilizando "cadForm"
+	- Leia notas de "Formulario de Cadastro (cadForm)" para mais informações
+-> Atualização para produtos da planilha de "Estoque" e de "Cadastro"
+-> Atalho inserido no Icone de Edição na planilha de "Cadastro"
+	- Atalho atualiza o produto de acordo com a linha do icone
+-> Alterado sub "atualizaProduto"
+
+Novo módulo: "iconScripts"
+-> Adição e remoção de icones para planilha de "Controle"
+
+Formulario de Cadastro (cadForm)
+-> Inserido campo de "Limite de Estoque"
+-> Campo de "Estoque Atual" permitido alteração apenas para cadastros novos
+	- Cadastros novos pode estar comprometido... Necessario correção
+-> Inserido procedimento "UserForm_Initialize" para casos de atualização de produto específico (Icone de Edição)
+	- "cadFast" ativado para esse tipo de atualização
+-> Corrigido buscas desnecessárias qaundo atualizando produto
+-> Botão "Cancelar" alterado para sempre encerrar formulário em caso de "cadFast" ativo

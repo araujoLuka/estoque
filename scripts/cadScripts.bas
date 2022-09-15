@@ -6,8 +6,15 @@ Attribute VB_Name = "cadScripts"
 
 Option Explicit
 
-' Inicializa o formulario
+' Inicializa o formulario para cadastrar produto
 Sub iniciaCadastro()
+
+    cadForm.Show
+
+End Sub
+
+' Inicializa o formulario para atualizar produto
+Sub iniciaAtualiz()
 
     cadForm.Show
 
@@ -38,11 +45,16 @@ Sub preenchecadForm(pRng As Range)
     Dim i As Integer
     
     With cadForm
-        .Controls("box" & 1) = pRng(1, 2)
+        .Caption = Replace(.Caption, "Cadastro", "Atualização")
+        If (pRng(1, 2) = "SEM GTIN") Then
+            .box1Check = True
+        Else
+            .box1 = pRng(1, 2)
+        End If
         .Controls("box" & 2) = pRng(1, 4)
         .Controls("box" & 3) = pRng(1, 5)
         .Controls("box" & 4) = pRng(1, 6)
-        .box4.SetFocus
+        Call travaCampo(.boxE, "-")
         .cadCheck = True
         .cadCheck.Visible = True
         .cadBtn.Caption = "Atualizar"
@@ -79,10 +91,39 @@ Sub cadastraProduto(vet() As Variant)
 End Sub
 
 Sub atualizaProduto(vet As Variant, pRow As Range)
-    Dim pName As String
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim pName As String, hdr As String
+    Dim wsPaths As Variant, arr As Variant
+    Dim i As Integer, w As Integer
+    Dim c As Integer
+    
+    wsPaths = Array("Estoque")
+    
+    For i = 1 To UBound(vet) - 2
+        If (Not vet(i) Like "=*") Then
+            If (vet(i) <> CStr(pRow(1, i))) Then
+                hdr = pRow.ListObject.HeaderRowRange(1, i)
+                For w = 0 To UBound(wsPaths)
+                    Set ws = Worksheets(wsPaths(w))
+                    Set tbl = ws.ListObjects(1)
+                    arr = tbl.HeaderRowRange.Value2
+                    
+                    For c = 1 To UBound(arr, 2)
+                        If (arr(1, c) = hdr) Then Exit For
+                    Next
+                    
+                    If (c > UBound(arr, 2)) Then Exit For
+                                            
+                    ws.ListObjects(1).ListColumns(c).DataBodyRange.Replace pRow(1, i), vet(i)
+                Next
+            End If
+        End If
+    Next
     
     pName = vet(5)
     pRow = vet
+    Sheets("cadNovo").Activate
     
     MsgBox "Produto '" & pName & "' atualizado com sucesso!"
 
@@ -107,7 +148,7 @@ Function geraVetorCad(u As UserForm, ByVal n_box As Integer) As Variant
     Dim i As Integer, j As Integer
     Dim vet(1 To 7) As Variant
     Dim rng As Range
-    Set rng = Sheets("Cadastro").ListObjects(1).ListRows(1).Range
+    Set rng = ActiveSheet.ListObjects(1).ListRows(1).Range
     i = 1
     j = 1
     

@@ -1,10 +1,16 @@
 Criando planilhas de Cadastro e Estoque separadas
+	OK
 
-Criando icones de edição e remoção para planilha
-
-Elaborando pasta resources
+Criando icones de edição e remoção para planilha 
+	Edit icon -> OK
 
 Necessário cria função de atualizar cadastro
-	Lembrar de usar Range.Replace
+	Okay (Direcionar para as demais planilhas)
+
+Proximos passos:
+	Ajustar planilha de "Controle"
+	Direcionar atualização de cadastro para planilhas
+	Implementar procedimento para iconde de remoção
+	Implementar entrada por XML
 
 XMLScripts está funcionado para ler XML, gravar em matriz e comparar com cadastro
