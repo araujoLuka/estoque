@@ -1,16 +1,23 @@
-Criando planilhas de Cadastro e Estoque separadas
-	OK
-
-Criando icones de edição e remoção para planilha 
-	Edit icon -> OK
-
-Necessário cria função de atualizar cadastro
-	Okay (Direcionar para as demais planilhas)
+Tarefas realizadas:
+	Criando icones de edição e remoção para planilha 
+		Edit icon -> OK
+		Rem icon -> Funcionando na planilha "Controle"
+		   	   -> Preciso fazer na planilha de "Cadastro" (trivial)
+	Necessário criar função de atualizar cadastro -> Okay 
+	Ajustar planilha de "Controle" -> Ok
+	Implementar procedimento para icone de remoção -> Ok na planilha "Controle"
 
 Proximos passos:
-	Ajustar planilha de "Controle"
 	Direcionar atualização de cadastro para planilhas
-	Implementar procedimento para iconde de remoção
+	Implementar icone de remocao para planilha de "Cadastro"/"Estoque"
 	Implementar entrada por XML
 
-XMLScripts está funcionado para ler XML, gravar em matriz e comparar com cadastro
+Ideias: 
+	Seria interessante um modulo para mensagens de erro
+	
+Outras tarefas:
+	Comentar codigos
+	Organizar modulo "functions"
+
+Lembrete:
+	XMLScripts está funcionado para ler XML, gravar em matriz e comparar com cadastro

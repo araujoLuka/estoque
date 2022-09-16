@@ -2,11 +2,11 @@ Attribute VB_Name = "movScripts"
 ' Autor: Lucas Araujo
 ' Ultima atualizacao: 09/07/2022
 '
-' Modulo para procedimentos do formulario de movimentação de estoque, 'movForm'
+' Modulo para procedimentos do formulario de movimentaï¿½ï¿½o de estoque, 'movForm'
 
 Option Explicit
 
-' Inicializa a movimentação de estoque
+' Inicializa a movimentacao de estoque
 Sub iniciaMovimentacao()
     
     On Error Resume Next
@@ -43,8 +43,8 @@ Sub preencheMovForm(pRng As Range, index As Integer, _
         End If
         
         If (pRng Is Nothing) Then
-            MsgBox "ATENÇAO!" & vbCrLf & _
-                "Movimentação de produto nao cadastrado" & vbCrLf & _
+            MsgBox "ATENCAO!" & vbCrLf & _
+                "Movimentacao de produto nao cadastrado" & vbCrLf & _
                 "Controle de estoque pode estar comprometido!", vbExclamation
             .tempCheck = True
             .Controls("box" & index) = cod
@@ -71,112 +71,55 @@ Sub clearForm(u As UserForm)
 End Sub
 
 Sub atualizaEstoque(pRng As Range, qtd As Variant)
+    Dim ws As Worksheet
+    Dim eRng As Range
     Dim i As Integer
     
+    Set ws = Sheets("Estoque")
+    Set eRng = buscaProduto(2, pRng(1, 4), ws)
+    
     qtd = CInt(qtd)
-    For i = 1 To pRng.Count
-        If (pRng.ListObject.HeaderRowRange(1, i) = "ESTOQUE") Then
+    
+    For i = 1 To eRng.Count
+        If (eRng.ListObject.HeaderRowRange(1, i) = "ESTOQUE") Then
             Exit For
         End If
     Next
     
-    pRng.Cells(1, i) = pRng.Cells(1, i) + qtd
-    
+    eRng.Cells(1, i) = eRng.Cells(1, i) + qtd
 End Sub
 
 Sub regEntrada(vet As Variant)
-    Dim ws As Worksheet
     Dim cTabble As ListObject
     Dim prodRow As Range
-    Dim i As Integer
-    Dim x As Variant
-    Set ws = Sheets("Entrada")
-    Set cTabble = ws.ListObjects(1)
     
+    Set cTabble = Sheets("Entrada").ListObjects(1)
     Set prodRow = insereRow(cTabble)
     
     prodRow = vet
-    
 End Sub
 
 Sub regSaida(vet As Variant)
-    Dim ws As Worksheet
     Dim cTabble As ListObject
     Dim prodRow As Range
-    Dim i As Integer
-    Dim x As Variant
-    Set ws = Sheets("Saida")
-    Set cTabble = ws.ListObjects(1)
     
+    Set cTabble = Sheets("Saida").ListObjects(1)
     Set prodRow = insereRow(cTabble)
     
     prodRow = vet
-
 End Sub
 
 Sub regMovimentacao(vet As Variant)
     Dim ws As Worksheet
     Dim cTabble As ListObject
     Dim prodRow As Range
-    Dim i As Integer
-    Dim x As Variant
+    
     Set ws = Sheets("Controle")
     Set cTabble = ws.ListObjects(1)
-    
     Set prodRow = insereRow(cTabble)
     
     prodRow = vet
-    Call addRemIcon(cTabble.ListRows.Count)
-
-End Sub
-
-Sub multiAddRemIcon()
-    Dim ws As Worksheet
-    Dim tbl As ListObject
-    Dim rng As Range
-    Dim sh As Shape
-    Dim c As Integer, r As Integer
-    Set ws = ActiveSheet
-    Set tbl = ws.ListObjects(1)
-    c = tbl.ListColumns.Count
-    r = 1
-
-    For Each sh In ws.Shapes
-        If (sh.Name = "rem_" & r) Then r = r + 1
-    Next
-    
-    Set sh = ws.Shapes("rem_0")
-    
-    For r = r To tbl.ListRows.Count
-        Set rng = tbl.ListRows(r).Range(1, c)
-        With sh.Duplicate
-            .Name = "rem_" & r
-            .Left = rng.Left + (rng.Offset(0, 1).Left - rng.Left) / 2 - sh.Width / 3
-            .Top = rng.Top + (rng.Offset(1, 0).Top - rng.Top) / 2 - sh.Height / 2
-        End With
-    Next
-    
-End Sub
-
-Sub addRemIcon(r As Integer)
-    Dim ws As Worksheet
-    Dim tbl As ListObject
-    Dim rng As Range
-    Dim sh As Shape
-    Dim c As Integer
-    Set ws = Sheets("Controle")
-    Set tbl = ws.ListObjects(1)
-    Set sh = ws.Shapes("rem_0")
-    c = tbl.ListColumns.Count
-
-    Set rng = tbl.ListRows(r).Range(1, c)
-    With sh.Duplicate
-        .Name = "rem_" & r
-        ws.Activate
-        .Left = rng.Left + (rng.Offset(0, 1).Left - rng.Left) / 2 - sh.Width / 3
-        .Top = rng.Top + ((rng.Offset(1, 0).Top - rng.Top) / 2) - (sh.Height / 2)
-    End With
-    
+    Call addRemIcon(ws, prodRow, cTabble.ListRows.Count, 1)
 End Sub
 
 Sub remMov()
@@ -208,29 +151,17 @@ Sub remMov()
     r2 = buscaMov(tp, arr(1, 1), arr(1, 2), arr(1, 6))
     Set rng2 = Sheets(tp).ListObjects(1).ListRows(r2).Range
     
-    Call deleteRemIcon(ws, tbl, r1, nm)
-    Call deleteRow(ws, rng1)
-    Call deleteRow(Sheets(tp), rng2)
+    Application.ScreenUpdating = False
+    
+    Call ajustaIcon(ws, r1, nm)
+    Call deleteRemIcon(ws, r1)
+    Call deleteRow(ws, rng1, 1, nm)
+    Call deleteRow(Sheets(tp), rng2, 0)
 
     Call atualizaEstoque(buscaProduto(2, arr(1, 6)), -q)
 
-End Sub
+    Application.ScreenUpdating = True
 
-Sub deleteRemIcon(ws As Worksheet, tbl As ListObject, rw As Integer, ByVal nm As String)
-    Dim i As Integer, max As Integer
-    Dim aux As String
-    Dim sh As Shape
-    max = tbl.ListRows.Count
-    Set sh = ws.Shapes(nm)
-    
-    For i = rw To max - 1
-        aux = "rem_" & i + 1
-        ws.Shapes(aux).Select
-        sh.Name = aux
-        nm = aux
-    Next
-    
-    sh.Delete
 End Sub
 
 Function buscaMov(ws_n As String, ByVal x1 As Long, _
@@ -274,7 +205,7 @@ Function geraVetorMov(u As UserForm, nm As String, ch As String, _
                       mt As String, n_box As Integer, _
                       Optional rw As Integer = 0) As Variant
     Dim i As Integer, j As Integer, e As Integer
-    Dim vet(1 To 10) As Variant
+    Dim vet(1 To 9) As Variant
     j = 1
     e = 0
 
@@ -298,8 +229,6 @@ Function geraVetorMov(u As UserForm, nm As String, ch As String, _
         End If
         j = j + i
         vet(j) = mt
-        j = j + 1
-        vet(j) = ""
     End With
     
     geraVetorMov = vet
@@ -351,7 +280,7 @@ Function defineMotiv(u As Object) As String
     Do
         str = trataMotiv(u)
         If (str = "") Then
-            MsgBox "Motivo invalido para movimentação do estoque!"
+            MsgBox "Motivo invalido para movimentaï¿½ï¿½o do estoque!"
             e = e + 1
             If (mU) Then u.Show
         Else
@@ -362,7 +291,7 @@ Function defineMotiv(u As Object) As String
     Loop Until str <> "" Or e >= 2
 
     If (e >= 2) Then MsgBox "Limite maximo de erros atingido!" & _
-                        vbCrLf & "Movimentação abortada", vbCritical
+                        vbCrLf & "Movimentaï¿½ï¿½o abortada", vbCritical
 
 End Function
 
@@ -393,8 +322,4 @@ Sub insereDadoLista(pList As Object, v As Variant)
             End If
         End If
     End With
-End Sub
-
-Sub insere_linha_lista(ByRef pList As ListObject, vet As Variant)
-
 End Sub

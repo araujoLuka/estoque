@@ -79,13 +79,8 @@ Sub cadastraProduto(vet() As Variant)
     
     prodRow = vet
     
-    cTabble.Range.Sort Key1:=cTabble.ListColumns(3), _
-                       Order1:=xlAscending, _
-                       Header:=xlYes, _
-                       Key2:=cTabble.ListColumns(5), _
-                       Order2:=xlAscending, _
-                       Header:=xlYes
-    
+    Call sortCad(cTabble)
+        
     MsgBox "Produto '" & vet(5) & "' cadastrado com sucesso!"
 
 End Sub
@@ -123,7 +118,6 @@ Sub atualizaProduto(vet As Variant, pRow As Range)
     
     pName = vet(5)
     pRow = vet
-    Sheets("cadNovo").Activate
     
     MsgBox "Produto '" & pName & "' atualizado com sucesso!"
 
@@ -137,8 +131,7 @@ Sub removeProduto(pRow As Range, nm As String)
     
     Call deleteRow(ws, pRow, 0)
         
-    cTabble.Range.Sort cTabble.ListColumns(3), _
-                       xlAscending, Header:=xlYes
+    Call sortCad(cTabble)
                        
     MsgBox "Produto '" & nm & "' removido com sucesso!"
 
@@ -175,43 +168,3 @@ Function geraVetorCad(u As UserForm, ByVal n_box As Integer) As Variant
     
     geraVetorCad = vet
 End Function
-
-Sub VBA_XML()
-Dim XMLFile As String
-Dim wb As Workbook
-Dim i As Integer
-Dim tbl As ListObject
-Dim col As Range, rng As Range
-Dim vet(3) As Variant
-
-    Application.ScreenUpdating = False
-    Application.DisplayAlerts = False
-    XMLFile = Application.GetSaveAsFilename("C:\Users\Lucas\Downloads")
-    Set wb = Workbooks.openXML(Filename:=XMLFile, LoadOption:=xlXmlLoadImportToList)
-    Application.DisplayAlerts = True
-    
-    Set tbl = wb.Worksheets(1).ListObjects(1)
-    For i = 1 To tbl.Range.Columns.Count
-        If (tbl.Range.Cells(1, i) Like "*Item*") Then
-            Set col = tbl.ListColumns(i).Range
-        End If
-    Next
-    col.Select
-    For Each rng In col
-        If (IsNumeric(rng) And rng <> "") Then
-            vet(1) = rng.Offset(0, 1)
-            vet(0) = rng.Offset(0, 2)
-            vet(2) = rng.Offset(0, 3)
-            If (vet(1) > 1000) Then
-                vet(3) = rng.Offset(0, 7)
-            Else
-                vet(3) = rng.Offset(0, 8)
-            End If
-            Debug.Print Join(vet, ", ")
-        End If
-    Next rng
-    
-    wb.Close False
-    Application.ScreenUpdating = True
-
-End Sub

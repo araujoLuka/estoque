@@ -35,7 +35,11 @@ Function buscaProduto(ByVal bIndex As Integer, ByVal bValue As Variant, Optional
         bValue = UCase(bValue)
     End If
             
-    If (bSheet Is Nothing) Then Set bSheet = Sheets("Cadastro")
+    If (bSheet Is Nothing) Then
+        Set bSheet = Sheets("Cadastro")
+    Else
+        bIndex = WorksheetFunction.Ceiling_Math((bIndex + 1) / 2)
+    End If
     bArray = bSheet.ListObjects(1).ListColumns(bIndex).DataBodyRange.Value
     bTam = bSheet.ListObjects(1).Range.Rows.Count
     
@@ -175,7 +179,7 @@ Function validaForm(uf As UserForm, nm As String, n_box As Integer) As Boolean
     validaForm = True
     For i = 1 To n_box
         If (uf.Controls("box" & i) = "") Then
-            MsgBox "Informações de cadastro inválidas!" & _
+            MsgBox "Informacoes de cadastro invalidas!" & _
                    vbCrLf & _
                    vbCrLf & _
                    "Insira o '" & uf.Controls("Label" & i) & "'!", vbExclamation
@@ -186,11 +190,11 @@ Function validaForm(uf As UserForm, nm As String, n_box As Integer) As Boolean
     Next
     
     If (nm = "cadForm") Then
-        If (uf.box4 < 0) Then
-            MsgBox "Informações de cadastro inválidas!" & _
+        If (uf.box4 <= 0) Then
+            MsgBox "Informacoes de cadastro invalidas!" & _
                    vbCrLf & _
                    vbCrLf & _
-                   "Impossível cadastrar estoque negativo!", vbExclamation
+                   "Limite de estoque deve ser no minimo 1!", vbExclamation
             validaForm = False
         End If
         Exit Function
@@ -204,12 +208,12 @@ Function validaForm(uf As UserForm, nm As String, n_box As Integer) As Boolean
         Next
         If (i > 4) Then
             If (uf.opt_o = False) Then
-                MsgBox "Informações de cadastro inválidas!" & vbCrLf & _
-                    "Defina um motivo para a movimentação do estoque!", vbExclamation
+                MsgBox "Informacoes de cadastro invalidas!" & vbCrLf & _
+                    "Defina um motivo para a movimentacao do estoque!", vbExclamation
                 validaForm = False
             ElseIf (uf.opt_o_txt = "") Then
-                MsgBox "Informações de cadastro inválidas!" & vbCrLf & _
-                    "Para outras motivações escreva manualmente", vbExclamation
+                MsgBox "Informacoes de cadastro invalidas!" & vbCrLf & _
+                    "Para outras motivacoes escreva manualmente", vbExclamation
                 uf.opt_o_txt.SetFocus
                 validaForm = False
             End If

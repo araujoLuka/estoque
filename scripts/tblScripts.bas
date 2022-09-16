@@ -22,17 +22,16 @@ Function insereRow(tbl As ListObject) As Range
 
 End Function
 
-Sub deleteRow(ws As Worksheet, rng As Range)
+Sub deleteRow(ws As Worksheet, rng As Range, tp As Integer, Optional nm As String)
     Dim tbl As ListObject
     Dim aux As Range
-    Dim i As Integer
     
     Set tbl = ws.ListObjects(1)
-    Set aux = tbl.ListRows(tbl.ListRows.Count).Range
-        
+          
     rng.EntireRow.Delete
     
-    aux.Offset(1).EntireRow.Hidden = True
+    Set aux = tbl.ListRows(tbl.ListRows.Count).Range
+    aux.offset(1).EntireRow.Hidden = True
 End Sub
 
 Sub sortCad(cTabble As ListObject)
