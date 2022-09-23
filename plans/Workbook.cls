@@ -10,6 +10,7 @@ Attribute VB_Exposed = True
 Private Sub Workbook_Open()
     
     Call logout
+    Application.DisplayFormulaBar = False
     Application.DisplayFullScreen = True
     With Sheets("empty")
         .Visible = xlSheetVisible
@@ -24,5 +25,7 @@ Private Sub Workbook_BeforeClose(Cancel As Boolean)
     
     Call logout
     Application.DisplayFullScreen = False
+    Application.DisplayFormulaBar = True
+    Save
 
 End Sub

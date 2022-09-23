@@ -13,6 +13,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+Private errors As Integer
+
 Private Sub cancelBtn_Click()
     
     bCancel = True
@@ -20,8 +22,11 @@ Private Sub cancelBtn_Click()
 End Sub
 
 Private Sub sendBtn_Click()
+    Dim str As String
     
-    Me.Hide
+    str = trataMotiv(Me)
+    If (validaMotiv(str)) Then Me.Hide
+
 End Sub
 
 Private Sub opt_o_Change()

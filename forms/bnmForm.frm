@@ -13,7 +13,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-
+Option Explicit
 
 Private Sub CommandButton1_Click()
     Dim i As Integer, j As Integer, k As Integer
@@ -68,4 +68,3 @@ Private Sub UserForm_Initialize()
     pList.ColumnWidths = cols_wdth
     
 End Sub
-

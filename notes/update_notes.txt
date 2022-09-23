@@ -1,0 +1,72 @@
+* Anotações de Atualizações Realizadas *
+
+cadForm
+-> "box5"(Estoque Atual) implementado e testado ok
+	• Leia alterações "cadScripts" para mais informações
+-> "UserForm_Initialize" corrigido erro ao acessar sem usar icone de edição
+-> Corrigido busca de "SEM GTIN" após sair do campo de "Codigo de Barras"(sub "box1_exit")
+-> Ao acessar form por icone de edição, é ativado "Cadastro Rápido", que fecha o formulário quando concluído, ao invés de reabrir para realizar um outro cadastro na sequencia
+
+Módulo "cadScripts"
+-> "preencheCadForm" atualizado para preencher campo "Estoque Atual"
+-> "cadastraProduto" atualizado para:
+	• inserir icones de edição e remoção de produto
+	• cadastrar também na planilha "Estoque"
+-> Inserido funcao "sortCad" em "atualizaProduto" para reordenar a planilha "Cadastro"
+	• Leia "Outras Atualizações" para ver sobre "sortCad"
+-> "removeProduto" atualizado:
+	• Remove icones da planilha "Cadastro"
+		- Leia alterações "iconScripts" para mais informações
+	• Recebe apenas a posição do produto como Parametros
+	• Modificado para tratar quando chamado pelo icone de remoção
+-> "resetForm" atualizado para resetar campo "Estoque Atual"
+
+Novo Módulo "estqScripts"
+-> Novo sub "criaEstoque"
+	• Ferramenta para exportar estoque de outra planilha
+	• Cria o estoque para cada produto cadastrado em "Cadastro"
+-> Sub "atualizaEstoque" movido para esse modulo e atualizado
+	• Recebe codigo do produto e quantidade a ser adicionada/subtraida comos parametros
+	• Busca o produto na planilha de "Estoque" com o codigo passado como parametro e atualiza caso encontre
+-> Nova Function "geraVetorEstoque"
+	• Vetor que será usado para cadastrar produto na planilha "Estoque"
+-> Novos Sub's "criaLista", "listaCompra" e "listaEstoqueB"
+	• Para criar uma tabela ou com os produtos para "COMPRA URGENTE"("listaCompra") ou com os produtos em "ESTOQUE BAIXO"("listaEstoqueB") e gerar um PDF no computador para imprimir essa tabela
+
+Módulo "iconScripts"
+-> Módulo reorganizado
+-> "addIcons" atualizado para inserir icones na planilha "Controle"
+-> Novo sub "updateIcons" para atualizar alterações nos icones na planilha ativa
+-> "ajustaIcon" atualizado para que a exclusao do icone seja realizada dentro da funcao
+-> Funcões para adicionar e remover icones de ediçao e remoçao reordenadas e atualizadas para atribuir macros
+-> Novo Sub "remIcon_event"
+	• Macro para ser atribuida ao icones de remoção
+	• Trata a remoção de acordo com a planilha atual do icone
+-> Sub "multi_addRemIcon" removido
+
+Módulo "functions"
+-> Novos Sub's "scrUpdating" e "tglFullScreen" para ativar atualizacao de tela e alternar a tela cheia respectivamente
+-> Nova Function "trataCaller" para tratar informações quando o VBA for chamado por um icone de controle
+-> Function "buscaProduto":
+	• Refeito
+		- Parametros agora são:
+			• bValue -> Valor de busca
+			• bType -> Tipo de busca
+				1 - CODIGO DE BARRAS
+				2 - CODIGO INTERNO
+				3 - PRODUTO
+			• bSheet -> Planilha para busca (Por padrão busca em "Cadastro")
+		- Define automaticamente a coluna de busca baseado em bType 
+-> "validaForm" atualizado para evitar movimentação de esoque para 0 (zero) unidades
+-> Novas Function's "validaMotiv" e "validaEstoque"
+	• Utilizadas para controlar movimentação de estoque
+-> Novo Sub "highlightSelection" para destacar a linha selecionada
+	• Utilizada na planilha "Estoque"
+
+Outras atualizações
+-> Adicionado desligamento de atualizações de tela para melhorar desempenho de macros
+-> Sub "remMov" do Módulo "movScripts" atualizado
+	• Recebe o nome do icone a ser removido como parametro obrigatorio
+-> Novo sub "sortCad" no Modulo "tblScripts"
+	• Ordena os dados na planilha de "Cadastro"
+	• Recebe a tabela como parametro para melhorar a eficiencia

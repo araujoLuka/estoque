@@ -1,6 +1,5 @@
 Attribute VB_Name = "cadScripts"
 ' Autor: Lucas Araujo
-' Ultima atualizacao: 09/07/2022
 '
 ' Modulo para procedimentos do formulario de cadastro/atualizacao de produto, 'cadForm'
 
@@ -29,6 +28,8 @@ Sub resetForm()
             .Controls("box" & i) = ""
             .Controls("box" & i).BackColor = vbWhite
         Next
+        Call destravaCampo(.box5)
+        .box5 = ""
         .cadCheck = False
         .cadCheck.Visible = False
         .cadBtn.Caption = "Cadastrar"
@@ -43,9 +44,17 @@ End Sub
 ' pRng eh a linha da tabela aonde estao as informacoes
 Sub preenchecadForm(pRng As Range)
     Dim i As Integer
+    Dim rw As Integer, cl As Integer
+    Dim arr As Variant
+    
+    rw = pRng.Row - pRng.ListObject.HeaderRowRange.Row + 1
+    arr = Sheets("Estoque").ListObjects(1).Range.Value2
+    For cl = 1 To UBound(arr, 2)
+        If (arr(1, cl) = "ESTOQUE") Then Exit For
+    Next
     
     With cadForm
-        .Caption = Replace(.Caption, "Cadastro", "Atualização")
+        .Caption = Replace(.Caption, "Cadastro", "AtualizaÃ§Ã£o")
         If (pRng(1, 2) = "SEM GTIN") Then
             .box1Check = True
         Else
@@ -54,7 +63,7 @@ Sub preenchecadForm(pRng As Range)
         .Controls("box" & 2) = pRng(1, 4)
         .Controls("box" & 3) = pRng(1, 5)
         .Controls("box" & 4) = pRng(1, 6)
-        Call travaCampo(.boxE, "-")
+        Call travaCampo(.box5, arr(rw, cl))
         .cadCheck = True
         .cadCheck.Visible = True
         .cadBtn.Caption = "Atualizar"
@@ -70,17 +79,33 @@ Sub cadastraProduto(vet() As Variant)
     Dim i As Integer, j As Integer
     Dim x As Variant
     Dim pName As String
-    Set ws = Sheets("Cadastro")
-    Set cTabble = ws.ListObjects(1)
     j = 1
     i = 1
     
+    Set ws = Sheets("Cadastro")
+    Set cTabble = ws.ListObjects(1)
     Set prodRow = insereRow(cTabble)
-    
-    prodRow = vet
+    Call editIcon_add(ws, prodRow, ws.ListObjects(1).ListRows.Count, 1)
+    Call remIcon_add(ws, prodRow, ws.ListObjects(1).ListRows.Count, 2)
+
+    prodRow.Formula = vet
     
     Call sortCad(cTabble)
-        
+    
+    Set ws = Sheets("Estoque")
+    Set cTabble = ws.ListObjects(1)
+    Set prodRow = insereRow(cTabble)
+       
+    x = geraVetorEstoque(prodRow, vet(7), "", vet)
+    
+    prodRow.Formula = x
+    With cTabble
+        prodRow.ClearFormats
+        .HeaderRowRange.Offset(1).Copy
+        .DataBodyRange.PasteSpecial xlPasteFormats
+    End With
+    Application.CutCopyMode = False
+
     MsgBox "Produto '" & vet(5) & "' cadastrado com sucesso!"
 
 End Sub
@@ -119,21 +144,54 @@ Sub atualizaProduto(vet As Variant, pRow As Range)
     pName = vet(5)
     pRow = vet
     
+    Call sortCad(pRow.ListObject)
+    
+    Set pRow = buscaProduto(vet(4), 2)
+    pRow.Select
+    
     MsgBox "Produto '" & pName & "' atualizado com sucesso!"
 
 End Sub
 
-Sub removeProduto(pRow As Range, nm As String)
+Sub removeProduto(Optional pRow As Range)
     Dim ws As Worksheet
     Dim cTabble As ListObject
-    Set ws = Sheets("Cadastro")
-    Set cTabble = ws.ListObjects(1)
+    Dim pCod As Integer, i As Integer, rw As Integer
+    Dim arr As Variant
+    Dim pNm As String, icon1 As String, icon2 As String
     
-    Call deleteRow(ws, pRow, 0)
-        
+    rw = trataCaller(Application.Caller, icon1)
+    If (rw = 0) Then
+        rw = pRow.Row - pRow.ListObject.HeaderRowRange.Row
+        icon1 = "rem_" & rw
+        icon2 = "edit_" & rw
+    Else
+        icon2 = "edit_" & rw
+    End If
+    
+    pNm = pRow(1, 5)
+    pCod = pRow(1, 4)
+    
+    Set ws = Sheets("Estoque")
+    Set cTabble = ws.ListObjects(1)
+    arr = cTabble.DataBodyRange.Value2
+    
+    For i = 1 To cTabble.ListRows.Count
+        If (pCod = arr(i, 3)) Then
+            Call deleteRow(ws, cTabble.ListRows(i).Range)
+            Exit For
+        End If
+    Next
+
+    Set ws = Sheets("Cadastro")
+
+    Call ajustaIcon(ws, rw, icon1)
+    Call ajustaIcon(ws, rw, icon2)
+    Call deleteRow(ws, pRow)
+    
     Call sortCad(cTabble)
-                       
-    MsgBox "Produto '" & nm & "' removido com sucesso!"
+
+    MsgBox "Produto '" & pNm & "' removido com sucesso!"
 
 End Sub
 
@@ -141,7 +199,8 @@ Function geraVetorCad(u As UserForm, ByVal n_box As Integer) As Variant
     Dim i As Integer, j As Integer
     Dim vet(1 To 7) As Variant
     Dim rng As Range
-    Set rng = ActiveSheet.ListObjects(1).ListRows(1).Range
+    Dim ws As Worksheet
+    Set rng = ActiveSheet.ListObjects(1).HeaderRowRange.Offset(1)
     i = 1
     j = 1
     
@@ -151,7 +210,7 @@ Function geraVetorCad(u As UserForm, ByVal n_box As Integer) As Variant
     vet(j) = u.Controls("box" & i)
     j = j + 1
     
-    vet(j) = "=IF([@[CODIGO INTERNO]]="""","""",IF([@[CODIGO INTERNO]]<1000,""AP"",""PÇ""))"
+    vet(j) = "=IF([@[CODIGO INTERNO]]="""","""",IF([@[CODIGO INTERNO]]<1000,""AP"",""Pï¿½""))"
     j = j + 1
     
     With u
@@ -163,8 +222,6 @@ Function geraVetorCad(u As UserForm, ByVal n_box As Integer) As Variant
             j = j + 1
         Next
     End With
-    
-    vet(j) = ""
-    
+        
     geraVetorCad = vet
 End Function

@@ -1,8 +1,8 @@
 Attribute VB_Name = "movScripts"
 ' Autor: Lucas Araujo
-' Ultima atualizacao: 09/07/2022
 '
-' Modulo para procedimentos do formulario de movimenta��o de estoque, 'movForm'
+'
+' Modulo para procedimentos do formulario de movimentacao de estoque, 'movForm'
 
 Option Explicit
 
@@ -70,25 +70,6 @@ Sub clearForm(u As UserForm)
     u.box1.SetFocus
 End Sub
 
-Sub atualizaEstoque(pRng As Range, qtd As Variant)
-    Dim ws As Worksheet
-    Dim eRng As Range
-    Dim i As Integer
-    
-    Set ws = Sheets("Estoque")
-    Set eRng = buscaProduto(2, pRng(1, 4), ws)
-    
-    qtd = CInt(qtd)
-    
-    For i = 1 To eRng.Count
-        If (eRng.ListObject.HeaderRowRange(1, i) = "ESTOQUE") Then
-            Exit For
-        End If
-    Next
-    
-    eRng.Cells(1, i) = eRng.Cells(1, i) + qtd
-End Sub
-
 Sub regEntrada(vet As Variant)
     Dim cTabble As ListObject
     Dim prodRow As Range
@@ -119,48 +100,39 @@ Sub regMovimentacao(vet As Variant)
     Set prodRow = insereRow(cTabble)
     
     prodRow = vet
-    Call addRemIcon(ws, prodRow, cTabble.ListRows.Count, 1)
+    Call remIcon_add(ws, prodRow, cTabble.ListRows.Count, 1)
 End Sub
 
-Sub remMov()
+Sub remMov(ByVal nm As String, Optional ByVal r1 As Integer)
     Dim ws As Worksheet
     Dim tbl As ListObject
     Dim rng1 As Range, rng2 As Range
     Dim arr() As Variant
-    Dim nm As String, tp As String
-    Dim r1 As Integer, r2 As Integer
-    Dim i As Integer, j As Integer
-    Dim q As Integer
+    Dim tp As String
+    Dim r2 As Integer, q As Integer
     
-    Set ws = ActiveSheet
+    Set ws = Sheets("Controle")
     Set tbl = ws.ListObjects(1)
     
-    If (IsError(Application.Caller)) Then Exit Sub
-    nm = Application.Caller
-    r1 = Right(nm, Len(nm) - InStr(1, nm, "_"))
+    If (r1 = 0) Then r1 = Right(nm, Len(nm) - InStr(1, nm, "_"))
+    
     Set rng1 = tbl.ListRows(r1).Range
     arr = rng1.Value2
     q = arr(1, 8)
     
+    tp = "Saida"
     If (q > 0) Then
-         tp = "Entrada"
-    Else
-         tp = "Saida"
+        tp = "Entrada"
     End If
     
     r2 = buscaMov(tp, arr(1, 1), arr(1, 2), arr(1, 6))
     Set rng2 = Sheets(tp).ListObjects(1).ListRows(r2).Range
-    
-    Application.ScreenUpdating = False
-    
+        
     Call ajustaIcon(ws, r1, nm)
-    Call deleteRemIcon(ws, r1)
-    Call deleteRow(ws, rng1, 1, nm)
-    Call deleteRow(Sheets(tp), rng2, 0)
+    Call deleteRow(ws, rng1)
+    Call deleteRow(Sheets(tp), rng2)
 
-    Call atualizaEstoque(buscaProduto(2, arr(1, 6)), -q)
-
-    Application.ScreenUpdating = True
+    Call atualizaEstoque(arr(1, 6), -q)
 
 End Sub
 
@@ -172,14 +144,14 @@ As Integer
     Dim i As Integer, j As Integer
     Dim a As Integer, b As Integer
     Dim r As Integer
-    Dim arr1() As Variant
+    Dim arr1 As Variant
     
     Set ws = Sheets(ws_n)
     Set tbl = ws.ListObjects(1)
     a = 1
     b = tbl.ListRows.Count
 
-    arr1 = tbl.ListColumns(1).DataBodyRange.Value2
+    arr1 = tbl.ListColumns(1).Range.Value2
 
     i = bSearch_c(arr1, a, b, x1, 0)
     j = bSearch_c(arr1, i, b, x1, 1)
@@ -192,8 +164,8 @@ As Integer
         r = i
     End If
     
-    arr1 = tbl.ListColumns(6).DataBodyRange.Value2
-    While ((arr1(r, 1) <> x3) And r <= b)
+    arr1 = tbl.ListColumns(6).Range.Value2
+    While ((arr1(r + 1, 1) <> x3) And r <= b)
         r = r + 1
     Wend
     
@@ -261,39 +233,80 @@ Function trataMotiv(u As UserForm) As String
     End With
 End Function
 
-Function defineMotiv(u As Object) As String
+Function defineMotiv(userform_name As String, Optional ByVal tp As Integer) As String
+    Dim u As Object
     Dim mU As Boolean
-    Dim i As Integer, e As Integer
-    Dim str As String
-    e = 0
+    Dim i As Integer
     
-    If (u.Name <> "movForm") Then
+    If (userform_name <> "movForm") Then
+        Load motivForm
+        If (tp = 1) Then
+            motivForm.Caption = Replace(motivForm.Caption, "do", "de Entrada no")
+        Else
+            motivForm.Caption = Replace(motivForm.Caption, "do", "de Saida no")
+        End If
         motivForm.Show
         mU = True
+        If (Not IsUserFormLoaded("motivForm")) Then Exit Function
         Set u = motivForm
         If (u.bCancel) Then
             Unload u
             Exit Function
         End If
+    Else
+        Set u = movForm
     End If
     
-    Do
-        str = trataMotiv(u)
-        If (str = "") Then
-            MsgBox "Motivo invalido para movimenta��o do estoque!"
-            e = e + 1
-            If (mU) Then u.Show
-        Else
-            str = UCase(str)
-            defineMotiv = str
-            If (mU) Then Unload u
-        End If
-    Loop Until str <> "" Or e >= 2
-
-    If (e >= 2) Then MsgBox "Limite maximo de erros atingido!" & _
-                        vbCrLf & "Movimenta��o abortada", vbCritical
+    defineMotiv = UCase(trataMotiv(u))
 
 End Function
+
+Function defineMotivMult(lst As Variant, ByVal tam As Integer, ByRef mt_e As String, ByRef mt_s As String) As Boolean
+    Dim i As Integer, e As Integer, s As Integer
+    Dim x As Variant
+
+    defineMotivMult = False
+    
+    For i = 0 To tam
+        If (lst(i, 4) > 0) Then
+            e = e + 1
+        Else
+            s = s + 1
+        End If
+    Next
+    
+    If (e > 0) Then
+        MsgBox "Defina uma motivacao para entrada de mercadoria", vbExclamation
+        mt_e = defineMotiv("mvmForm", 1)
+        If (mt_e = "") Then Exit Function
+    End If
+    
+    If (s > 0) Then
+        MsgBox "Defina uma motivacao para saida de mercadoria", vbExclamation
+        mt_s = defineMotiv("mvmForm", 2)
+        If (mt_s = "") Then Exit Function
+    End If
+    
+    defineMotivMult = True
+
+End Function
+
+Sub deleteAllpCodMov(pCod As Integer)
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim arr As Variant
+    Dim i As Integer
+
+    Set ws = Sheets("Controle")
+    Set tbl = ws.ListObjects(1)
+    arr = tbl.DataBodyRange.Value2
+    
+    For i = 1 To tbl.ListRows.Count
+        If (pCod = arr(i, 6)) Then
+            Call remMov("rem_" & i, i)
+        End If
+    Next
+End Sub
 
 Sub insereDadoLista(pList As Object, v As Variant)
     Dim p As Integer, i As Integer

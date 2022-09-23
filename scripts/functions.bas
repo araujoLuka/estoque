@@ -1,6 +1,32 @@
 Attribute VB_Name = "functions"
 Option Explicit
 
+Sub scrUpdting()
+
+    Application.ScreenUpdating = True
+
+End Sub
+
+Sub tglFullScreen()
+
+    Application.DisplayFullScreen = Not Application.DisplayFullScreen
+
+End Sub
+
+Function trataCaller(cllr As Variant, ByRef nm As String) As Integer
+    Dim rw As Integer
+    
+    rw = 0
+    
+    If (Not IsError(cllr)) Then
+        nm = cllr
+        rw = Right(nm, Len(nm) - InStr(1, nm, "_"))
+    End If
+    
+    trataCaller = rw
+
+End Function
+
 Function identificaTipo(criterio As Integer) As Integer
     Dim i As Integer
     
@@ -18,11 +44,21 @@ Function identificaTipo(criterio As Integer) As Integer
 
 End Function
 
-Function buscaProduto(ByVal bIndex As Integer, ByVal bValue As Variant, Optional bSheet As Worksheet) As Range
+Function buscaProduto(ByVal bValue As Variant, ByVal bType As Integer, Optional bSheet As Worksheet) As Range
     Dim bArray() As Variant
-    Dim bTam As Integer, i As Integer
+    Dim i As Integer, c As Integer
+    Dim str As String
     
     If (bValue = "") Then Exit Function
+    
+    Select Case bType
+    Case 1
+        str = "*BARRAS"
+    Case 2
+        str = "*INTERNO"
+    Case 3
+        str = "*BARRAS"
+    End Select
     
     If (IsNumeric(bValue)) Then
         If (Len(bValue) >= 5) Then
@@ -30,22 +66,23 @@ Function buscaProduto(ByVal bIndex As Integer, ByVal bValue As Variant, Optional
         Else
             bValue = CInt(bValue)
         End If
-        bIndex = 2 * bIndex
     Else
         bValue = UCase(bValue)
     End If
-            
-    If (bSheet Is Nothing) Then
-        Set bSheet = Sheets("Cadastro")
-    Else
-        bIndex = WorksheetFunction.Ceiling_Math((bIndex + 1) / 2)
-    End If
-    bArray = bSheet.ListObjects(1).ListColumns(bIndex).DataBodyRange.Value
-    bTam = bSheet.ListObjects(1).Range.Rows.Count
     
-    For i = 1 To bTam - 1
-        If (bArray(i, 1) = bValue) Then
-            Set buscaProduto = bSheet.ListObjects(1).ListRows(i).Range
+    If (bSheet Is Nothing) Then Set bSheet = Sheets("Cadastro")
+    
+    bArray = bSheet.ListObjects(1).Range.Value
+    
+    For c = 1 To UBound(bArray, 2)
+        If (bArray(1, c) Like str) Then Exit For
+    Next
+    
+    If (c > UBound(bArray, 2)) Then Exit Function
+    
+    For i = 2 To UBound(bArray, 1)
+        If (bArray(i, c) = bValue) Then
+            Set buscaProduto = bSheet.ListObjects(1).ListRows(i - 1).Range
             Exit For
         End If
     Next
@@ -81,7 +118,7 @@ Function bSearch_c(arr As Variant, ByVal a As Integer, ByVal b As Integer, ByVal
     bSearch_c = b
 End Function
 
-Function validaMovim(cHerdeiro As String, tipo As Integer) As Boolean
+Function validaMovim(ByVal cHerdeiro As String, tipo As Integer) As Boolean
     Dim tbl As ListObject
     Dim aArray() As Variant, bArray() As Variant
     Dim i As Integer, m As Integer, x As Integer
@@ -189,6 +226,13 @@ Function validaForm(uf As UserForm, nm As String, n_box As Integer) As Boolean
         End If
     Next
     
+    If (nm = "movForm" Or nm = "mvmForm") Then
+        If (uf.Controls("box" & i - 1) = 0) Then
+            validaForm = False
+        End If
+        Exit Function
+    End If
+    
     If (nm = "cadForm") Then
         If (uf.box4 <= 0) Then
             MsgBox "Informacoes de cadastro invalidas!" & _
@@ -221,6 +265,45 @@ Function validaForm(uf As UserForm, nm As String, n_box As Integer) As Boolean
     End If
 End Function
 
+Function validaMotiv(str As String, Optional errors As Integer) As Boolean
+    Dim ret As Boolean
+    
+    ret = True
+    If (str = "") Then
+        MsgBox "Motivo invalido para movimentacao do estoque!"
+        If (errors < 3) Then
+            errors = errors + 1
+        Else
+            MsgBox "Limite maximo de erros atingido!" & vbCrLf & _
+                   "Movimentacao abortada", vbCritical
+        End If
+        ret = False
+    End If
+    
+    validaMotiv = ret
+
+End Function
+
+Function validaEstoque(ByVal qtd As Integer, ByVal estq As Integer)
+    Dim ret As Boolean
+    
+    ret = True
+    If (qtd > estq) Then
+        MsgBox Prompt:="Quantidade deve ser " & _
+                       "menor ou igual ao total disponivel em estoque" & _
+                       vbCrLf & _
+                       vbCrLf & _
+                       "Estoque atual do produto é " & estq, _
+               Buttons:=vbExclamation, _
+               Title:="Falha ao registrar saida de mercadoria"
+        ret = False
+        Exit Function
+    End If
+    
+    validaEstoque = ret
+End Function
+
+
 Function IsUserFormLoaded(ByVal UFName As String) As Boolean
     Dim UForm As Object
     
@@ -233,7 +316,7 @@ Function IsUserFormLoaded(ByVal UFName As String) As Boolean
     Next
 End Function
 
-Sub travaCampo(c As Control, Optional x As String = "")
+Sub travaCampo(c As Control, Optional ByVal x As String = "")
     With c
         .Value = x
         .BackColor = &H80000016
@@ -260,3 +343,36 @@ Function Bin2Dec(sMyBin As String) As Long
           Mid(sMyBin, iLen - x + 1, 1) * 2 ^ x
     Next
 End Function
+
+Sub highlightSelection(ByVal Target As Range)
+    Dim rw As Integer
+    Dim fillColor As MsoColorType, bordColor As MsoColorType
+    fillColor = RGB(230, 230, 230)
+    bordColor = RGB(0, 176, 80)
+
+    rw = Target.Row - Target.ListObject.HeaderRowRange.Row
+    
+    If (Target.ListObject.ListRows.Count = 0 Or rw <= 0) Then Exit Sub
+
+    With Target.ListObject.ListRows(rw)
+        With .Range
+            .Interior.Color = fillColor
+            With .Borders(xlEdgeTop)
+                .LineStyle = xlContinuous
+                .Color = bordColor
+                .Weight = xlThin
+            End With
+            With .Borders(xlEdgeBottom)
+                .LineStyle = xlContinuous
+                .Color = bordColor
+                .Weight = xlThin
+            End With
+            With .Borders(xlEdgeRight)
+                .LineStyle = xlContinuous
+                .Color = bordColor
+                .Weight = xlMedium
+            End With
+        End With
+    End With
+
+End Sub

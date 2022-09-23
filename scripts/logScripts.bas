@@ -16,18 +16,21 @@ End Sub
 Sub loggin_A()
     Dim ws As Worksheet
     Dim usrRng As Range
-    Dim user As Object, pass As Object, key As String
+    Dim user As Object, pass As Object
+    Dim key As String
+    Dim tp As Integer
+    
     Set ws = Sheets("Acesso")
     Set usrRng = Range("actv")
     Set user = ws.OLEObjects("TextBox1").Object
     Set pass = ws.OLEObjects("TextBox2").Object
     
-    key = buscaAcesso(user.Value)
+    key = buscaAcesso(user.Value, tp)
     
     If (key <> pass.Value) Then
         MsgBox "Usuario/senha invalidos!"
     Else
-        Call planAccess(user.Value)
+        Call planAccess(user.Value, tp)
         user.Value = ""
         pass.Value = ""
         ws.Shapes("logginStyle").Line.Visible = msoFalse
@@ -58,14 +61,15 @@ Sub logout()
     
 End Sub
 
-Function buscaAcesso(user As String) As String
+Function buscaAcesso(user As String, ByRef tp As Integer) As String
     Dim i As Integer
     Dim tbl As ListObject
     Set tbl = Sheets("Usuarios").ListObjects(1)
     
     buscaAcesso = "-1"
     For i = 1 To tbl.ListRows.Count + 1
-        If (tbl.Range(i, 1) = user) Then
+        If (tbl.Range(i, 1) = LCase(user)) Then
+            tp = tbl.Range(i, 3)
             buscaAcesso = tbl.Range(i, 2)
             Exit For
         End If
@@ -94,29 +98,33 @@ Sub invalidPass()
     End With
 End Sub
 
-Sub planAccess(user As String)
+Sub planAccess(user As String, tp As Integer)
     Dim ws As Worksheet
     
     Unload logForm
     
     Application.ScreenUpdating = False
+    
     For Each ws In ActiveWorkbook.Sheets
         If (ws.Name <> "Usuarios" And ws.Name <> "empty") Then
             ws.Visible = xlSheetVisible
         End If
     Next
-    If (user = "admin") Then
+    
+    If (tp = 3) Then
         Sheets("Usuarios").Visible = xlSheetVisible
         Sheets("Acesso").Visible = xlSheetHidden
+        Sheets("Acesso").Unprotect
         ActiveWindow.DisplayWorkbookTabs = True
     Else
         Sheets("Acesso").Visible = xlSheetVeryHidden
         ActiveWindow.DisplayVerticalScrollBar = True
     End If
     Range("actv") = UCase(user)
+    
     Application.ScreenUpdating = True
     Application.CalculateFull
     
-    MsgBox "Bem vindo " & UCase(user) & "!"
+    'MsgBox "Bem vindo " & UCase(user) & "!"
     
 End Sub

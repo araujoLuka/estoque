@@ -19,14 +19,24 @@ Private pRng As Range
 Private r As Boolean, p As Boolean
 Private backup As Variant
 
-Private Sub box1Check_Change()
+' Procedimento ao iniciar o formulario
+Private Sub UserForm_Initialize()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim cllr As String
+    Dim rw As Integer
     
-    If (box1Check) Then
-        Call travaCampo(box1, "SEM GTIN")
-    Else
-        Call destravaCampo(box1)
+    Set ws = ActiveSheet
+    Set tbl = ws.ListObjects(1)
+    cllr = Application.Caller
+    
+    If (cllr Like "edit_*") Then
+        rw = Right(cllr, Len(cllr) - InStr(1, cllr, "_"))
+        Set pRng = tbl.ListRows(rw).Range
+        Call preenchecadForm(pRng)
+        cadFast = True
     End If
-
+    
 End Sub
 
 ' Botao que chama o procedimento de cadastro/atualizacao de produto
@@ -39,6 +49,8 @@ Private Sub cadBtn_Click()
     If (Not validaForm(Me, Me.Name, n_box)) Then
         Exit Sub
     End If
+    
+    Application.ScreenUpdating = False
     
     vet = geraVetorCad(Me, n_box)
     
@@ -55,6 +67,8 @@ Private Sub cadBtn_Click()
         Unload Me
     End If
 
+    Application.ScreenUpdating = True
+
 End Sub
 
 ' Botao que chama o procedimento de remocao de produto
@@ -64,7 +78,7 @@ Private Sub remBtn_Click()
     If (cadCheck) Then
         ' Confirmacao de exclusao de produto
         If (MsgBox("Deseja realmente excluir o produto '" + box3 + "'?", vbYesNo) = vbYes) Then
-            Call removeProduto(pRng, box3) ' Sub de exclusao de produto
+            Call removeProduto(pRng) ' Sub de exclusao de produto
             Call resetForm ' Sub para resetar formulario
         End If
     End If
@@ -74,11 +88,21 @@ End Sub
 ' Botao que cancela a operacao de cadastro/atualizacao de produto
 Private Sub cancelBtn_Click()
 
-    ' Se atualizando um produto e não é cadastro rapido, reseta o formulario
+    ' Se atualizando um produto e nao eh cadastro rapido, reseta o formulario
     If (cadCheck And Not cadFast) Then
         Call resetForm
     Else ' Senao, fecha o formulario
         Unload Me
+    End If
+
+End Sub
+
+Private Sub box1Check_Change()
+    
+    If (box1Check) Then
+        Call travaCampo(box1, "SEM GTIN")
+    Else
+        Call destravaCampo(box1)
     End If
 
 End Sub
@@ -95,12 +119,12 @@ Private Sub box1_Exit(ByVal Cancel As MSForms.ReturnBoolean)
     If (r Or cadCheck) Then Exit Sub
     r = True
     
-    If (box1 = "") Then
+    If (box1 = "" Or UCase(box1) = "SEM GTIN") Then
         r = False
         Exit Sub
     End If
     ' Busca o produto na tabela por codigo de barras
-    Set pRng = buscaProduto(1, box1)
+    Set pRng = buscaProduto(box1, 1)
     
     ' Verifica se o produto foi encontrado
     ' Se encontrado, preenche o formulario com as informacoes cadastradas
@@ -154,7 +178,7 @@ Private Sub box2_Exit(ByVal Cancel As MSForms.ReturnBoolean)
     End If
     
     ' Busca o produto na tabela por codigo interno
-    Set pRng = buscaProduto(2, box2)
+    Set pRng = buscaProduto(box2, 2)
 
     ' Se encontrado, preenche o form com as informacoes cadastradas
     If (Not (pRng Is Nothing)) Then
@@ -197,26 +221,4 @@ End Sub
 
 Private Sub box4_Exit(ByVal Cancel As MSForms.ReturnBoolean)
     p = False
-End Sub
-
-Private Sub UserForm_Initialize()
-    Dim ws As Worksheet
-    Dim tbl As ListObject
-    Dim cllr As String
-    Dim rw As Integer
-    
-    Set ws = ActiveSheet
-    Set tbl = ws.ListObjects(1)
-    cllr = Application.Caller
-    
-    If (cllr Like "edit_*") Then
-        rw = Right(cllr, Len(cllr) - InStr(1, cllr, "_"))
-        Set pRng = tbl.ListRows(rw).Range
-        Call preenchecadForm(pRng)
-    End If
-    cadFast = True
-    With Sheets("Estoque").ListObjects(1)
-        boxE = .ListRows(rw).Range(1, .ListColumns.Count - 1)
-    End With
-    
 End Sub

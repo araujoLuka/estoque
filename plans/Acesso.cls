@@ -7,14 +7,14 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = True
-' * Scripts - Planilha Acesso *
-' *
-' * Autor: Lucas Araujo *
-' *
-' * Resumo: Planilha que controla login na planilha de Estoque *
+' Scripts - Planilha Acesso
+'
+' Autor: Lucas Araujo
+'
+' Resumo: Planilha que controla login na planilha de Estoque
 '---------------------------------------------------------------'
 
-' \\\ Forca declaracao de variavel ///
+' \\\ Forca declaracao de variaveis ///
 Option Explicit
 
 ' \\\ Controle da planilha ///

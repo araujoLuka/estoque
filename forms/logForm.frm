@@ -17,15 +17,16 @@ Option Explicit
 
 Private Sub logginBtn_Click()
     Dim key As String
+    Dim tp As Integer
     
     If (user = "close") Then Application.Quit
     
-    key = buscaAcesso(user)
+    key = buscaAcesso(user, tp)
     
     If (passw <> key) Then
         Call invalidPass
     Else
-        Call planAccess(user)
+        Call planAccess(user, tp)
     End If
 
 End Sub
@@ -45,10 +46,11 @@ End Sub
 Private Sub Label3_Click()
     Dim us As String
     Dim key As String
+    Dim tp As Integer
     
     Me.Hide
     us = InputBox("Insira seu nome de usuario:", "Recuperação de Acesso")
-    key = buscaAcesso(us)
+    key = buscaAcesso(us, tp)
     
     If (key = "-1") Then
         MsgBox "Usuario não encontrado!" & vbCrLf & _
@@ -56,6 +58,5 @@ Private Sub Label3_Click()
     Else
         MsgBox "Voce pode redefinir depois!"
     End If
-    
     
 End Sub

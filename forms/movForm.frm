@@ -16,14 +16,6 @@ Attribute VB_Exposed = False
 Option Explicit
 Private pRng As Range
 
-Private Sub opt_o_Change()
-    If (opt_o) Then
-        Call destravaCampo(opt_o_txt)
-    Else
-        Call travaCampo(opt_o_txt)
-    End If
-End Sub
-
 Private Sub UserForm_Initialize()
     Dim entry As String, cod As String
     Dim index As Integer
@@ -47,7 +39,7 @@ Private Sub UserForm_Initialize()
         Exit Sub
     End If
 
-    Set pRng = buscaProduto(index, cod)
+    Set pRng = buscaProduto(cod, index)
     
     If (pRng Is Nothing) Then
         mbResult = MsgBox("Produto nao encontrado na base de dados" & vbCrLf & _
@@ -60,7 +52,7 @@ Private Sub UserForm_Initialize()
                 .cadFast = True
                 .Show
             End With
-            Set pRng = buscaProduto(index, cod)
+            Set pRng = buscaProduto(cod, index)
             If (pRng Is Nothing) Then
                 MsgBox "Falha ao cadastrar produto!"
             End If
@@ -68,70 +60,85 @@ Private Sub UserForm_Initialize()
     End If
     Call preencheMovForm(pRng, index, herd, entry, cod)
     If (ActiveSheet.Name = "Entrada") Then
-        remBtn.Visible = False
+        subBtn.Visible = False
     ElseIf (ActiveSheet.Name = "Saida") Then
-        cadBtn.Visible = False
-        remBtn.Left = cadBtn.Left
+        addBtn.Visible = False
+        subBtn.Left = addBtn.Left
     End If
     
 End Sub
 
-' Botao que chama o procedimento de cadastro/atualizacao de produto
-Private Sub cadBtn_Click()
+' Botao para adicionar produto no estoque
+Private Sub addBtn_Click()
     Dim vet() As Variant
+    Dim mtv As String
     Dim n_box As Integer
+    
+    mtv = trataMotiv(Me)
     n_box = countFormTBX(Me)
 
+    ' Impede a execucao se houver falha na motivacao da movimentacao
+    If (Not validaMotiv(mtv)) Then Exit Sub
+
     ' Impede a execucao se os campos obrigatorios nao estiverem preenchidos
-    If (Not validaForm(Me, Me.Name, n_box)) Then
-        Exit Sub
-    End If
+    If (Not validaForm(Me, Me.Name, n_box)) Then Exit Sub
     
-    If (validaMovim(boxH, 1) = False) Then Exit Sub
+    ' Impede a execucao se houver duplicidade de codigo herdeiro
+    If (Not validaMovim(boxH, 1)) Then Exit Sub
     
-    vet = geraVetorMov(Me, Me.Name, boxH, defineMotiv(Me), n_box)
+    vet = geraVetorMov(Me, Me.Name, boxH, mtv, n_box)
+    
+    Application.ScreenUpdating = False
+    
     Call regEntrada(vet())
     Call regMovimentacao(vet())
-    Call atualizaEstoque(pRng, box4)
+    Call atualizaEstoque(vet(6), box4)
+    
+    Application.ScreenUpdating = True
     
     Unload Me
     On Error Resume Next
     movForm.Show
 End Sub
 
-' Botao que chama o procedimento de remocao de produto
-Private Sub remBtn_Click()
+' Botao para subtrair produto do estoque
+Private Sub subBtn_Click()
     Dim vet() As Variant
+    Dim mtv As String
     Dim n_box As Integer
+    
+    mtv = trataMotiv(Me)
     n_box = countFormTBX(Me)
-    
+
+    ' Impede a execucao se houver falha na motivacao da movimentacao
+    If (Not validaMotiv(mtv)) Then Exit Sub
+
     ' Impede a execucao se os campos obrigatorios nao estiverem preenchidos
-    If (Not validaForm(Me, Me.Name, n_box)) Then
-        Exit Sub
-    End If
+    If (Not validaForm(Me, Me.Name, n_box)) Then Exit Sub
     
-    If (validaMovim(boxH, 2) = False) Then Exit Sub
-    If (pRng(1, pRng.Count - 1) < CInt(box4)) Then
-        MsgBox Prompt:="Limite máximo de remoção atingido!" & vbCrLf & vbCrLf & _
-                       "Total de unidades ao remover deve ser " & _
-                       "menor ou igual à quantidade disponível em estoque" & _
-                       vbCrLf & _
-                       vbCrLf & _
-                       "Estoque atual do produto é " & pRng(1, pRng.Count - 1), _
-               Buttons:=vbCritical, _
-               Title:="Falha Fatal ao Retirar do Estoque"
-        Exit Sub
-    End If
+    ' Impede a execucao se houver duplicidade de codigo herdeiro
+    If (Not validaMovim(boxH, 1)) Then Exit Sub
+    
+    ' Impede a execucao se a quantidade a ser removida eh maior do que o estoque
+    If (Not validaEstoque(box4, buscaProduto(box2, 2, Sheets("Estoque"))(1, 6))) Then Exit Sub
     
     box4 = -box4
-    vet = geraVetorMov(Me, Me.Name, boxH, defineMotiv(Me), n_box)
+    vet = geraVetorMov(Me, Me.Name, boxH, mtv, n_box)
     Call regSaida(vet())
     Call regMovimentacao(vet())
-    Call atualizaEstoque(pRng, box4)
+    Call atualizaEstoque(vet(6), box4)
     
     Unload Me
     On Error Resume Next
     movForm.Show
+End Sub
+
+Private Sub opt_o_Change()
+    If (opt_o) Then
+        Call destravaCampo(opt_o_txt)
+    Else
+        Call travaCampo(opt_o_txt)
+    End If
 End Sub
 
 ' Botao que cancela a operacao de cadastro/atualizacao de produto

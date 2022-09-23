@@ -15,7 +15,7 @@ Sub movXML()
     mat = import_XML
     
     For i = 1 To UBound(mat, 1)
-        Set arr = buscaProduto(2, mat(i)(2))
+        Set arr = buscaProduto(mat(i)(2), 2)
         If (Not arr Is Nothing) Then
             arr = arr.Value2
             For j = 1 To UBound(mat(i)) - 1
