@@ -15,6 +15,6 @@ Os elementos presentes nesse projeto são definidos da seguinte forma:
 * Como executar
     - Para visualizar o projeto é necessario possuir o sistema Windows e o Microsoft Excel
     - Baixe o arquivo "Estoque.xlsm" e a pasta "resources"
-    - Caso prefira, armazene ambos em Documentos e crie um atalho para area de trabalho para organizar
+    - Caso prefira, baixe todo o repositorio, armazene em Documentos e crie um atalho da planilha para area de trabalho para organizar
     - Abra a planilha e habilite as macros e o conteudo
     - Para acessar ao sistema:  usuario: admin - senha: admin
