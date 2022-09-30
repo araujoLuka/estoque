@@ -8,7 +8,7 @@
 - **Plataforma**: Windows
 
 # **Arquivos do repositorio**
-A estruturação do repositorio se dá por [Diretorios](##Diretorios), [Anotações](##Anotações) e [Executavel](##Execução)
+A estruturação do repositorio se dá por [Diretorios](#diretorios), [Anotações](#anotações) e [Executavel](#execução)
 
 ## Diretorios
 Os diretórios presentes nesse projeto são definidos da seguinte forma:
