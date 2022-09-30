@@ -44,14 +44,6 @@ End Sub
 ' pRng eh a linha da tabela aonde estao as informacoes
 Sub preenchecadForm(pRng As Range)
     Dim i As Integer
-    Dim rw As Integer, cl As Integer
-    Dim arr As Variant
-    
-    rw = pRng.Row - pRng.ListObject.HeaderRowRange.Row + 1
-    arr = Sheets("Estoque").ListObjects(1).Range.Value2
-    For cl = 1 To UBound(arr, 2)
-        If (arr(1, cl) = "ESTOQUE") Then Exit For
-    Next
     
     With cadForm
         .Caption = Replace(.Caption, "Cadastro", "Atualização")
@@ -63,7 +55,7 @@ Sub preenchecadForm(pRng As Range)
         .Controls("box" & 2) = pRng(1, 4)
         .Controls("box" & 3) = pRng(1, 5)
         .Controls("box" & 4) = pRng(1, 6)
-        Call travaCampo(.box5, arr(rw, cl))
+        Call travaCampo(.box5, getEstoque(.box2))
         .cadCheck = True
         .cadCheck.Visible = True
         .cadBtn.Caption = "Atualizar"
@@ -72,7 +64,7 @@ Sub preenchecadForm(pRng As Range)
 
 End Sub
 
-Sub cadastraProduto(vet As Variant)
+Sub cadastraProduto(vet As Variant, Optional fast As Boolean)
     Dim ws As Worksheet
     Dim cTabble As ListObject
     Dim prodRow As Range
@@ -112,15 +104,16 @@ Sub cadastraProduto(vet As Variant)
     Call sortTbl(cTabble)
     
     Application.ScreenUpdating = True
-    MsgBox "Produto '" & vet(5) & "' cadastrado com sucesso!"
+    
+    If (Not fast) Then MsgBox "Produto '" & vet(5) & "' cadastrado com sucesso!", vbInformation
 
 End Sub
 
-Sub atualizaProduto(vet As Variant, pRow As Range)
+Sub atualizaProduto(vet As Variant, pRow As Range, Optional fast As Boolean)
     Dim ws As Worksheet
     Dim tbl As ListObject
     Dim pName As String, hdr As String
-    Dim wsPaths As Variant, arr As Variant
+    Dim wsPaths As Variant
     Dim i As Integer, w As Integer
     Dim c As Integer
     
@@ -133,15 +126,13 @@ Sub atualizaProduto(vet As Variant, pRow As Range)
                 For w = 0 To UBound(wsPaths)
                     Set ws = Worksheets(wsPaths(w))
                     Set tbl = ws.ListObjects(1)
-                    arr = tbl.HeaderRowRange.Value2
                     
-                    For c = 1 To UBound(arr, 2)
-                        If (arr(1, c) = hdr) Then Exit For
-                    Next
+                    If (tbl.ListRows.Count = 0) Then Exit For
                     
-                    If (c > UBound(arr, 2)) Then Exit For
+                    c = defineColuna(tbl, hdr)
+                    If (c = 0) Then Exit For
                                             
-                    ws.ListObjects(1).ListColumns(c).DataBodyRange.Replace pRow(1, i), vet(i)
+                    tbl.ListColumns(c).DataBodyRange.Replace pRow(1, i), vet(i)
                 
                     If (ws.Name = "Estoque") Then Call sortTbl(tbl)
                 Next
@@ -157,11 +148,11 @@ Sub atualizaProduto(vet As Variant, pRow As Range)
     Set pRow = buscaProduto(vet(4), 2)
     pRow.Select
     
-    MsgBox "Produto '" & pName & "' atualizado com sucesso!"
+    If (Not fast) Then MsgBox "Produto '" & pName & "' atualizado com sucesso!"
 
 End Sub
 
-Sub removeProduto(Optional pRow As Range)
+Sub removeProduto(pRow As Range, Optional fast As Boolean, Optional rem_reg As Boolean)
     Dim ws As Worksheet
     Dim cTabble As ListObject
     Dim pCod As Integer, rw As Integer
@@ -184,9 +175,13 @@ Sub removeProduto(Optional pRow As Range)
     pNm = pRow(1, 5)
     pCod = pRow(1, 4)
     
-    mbx = MsgBox("Deseja remover os registros de movimentacao também?", vbQuestion + vbYesNoCancel)
-    If (mbx = vbCancel) Then Exit Sub
-    If (mbx = vbYes) Then Call removeMovimMult(pCod)
+    If (Not fast) Then
+        mbx = MsgBox("Deseja remover os registros de movimentacao também?", vbQuestion + vbYesNoCancel)
+        If (mbx = vbCancel) Then Exit Sub
+        If (mbx = vbYes) Then Call removeMovimMult(pCod)
+    Else
+        If (rem_reg) Then Call removeMovimMult(pCod)
+    End If
     
     Call removeEstoque(pCod)
 
@@ -196,7 +191,7 @@ Sub removeProduto(Optional pRow As Range)
     
     Application.ScreenUpdating = True
     
-    MsgBox "Produto '" & pNm & "' removido com sucesso!"
+    If (Not fast) Then MsgBox "Produto '" & pNm & "' removido com sucesso!"
 
 End Sub
 
@@ -274,3 +269,45 @@ Function geraVetorCadXML(arr As Variant, Optional lim As Variant, Optional estq 
     
     geraVetorCadXML = vet
 End Function
+
+Sub importarCadastro()
+    Dim wb As Workbook
+    Dim tbl As ListObject
+    Dim rng As Range
+    Dim i As Integer
+    Dim str As String
+    Dim wData As Variant, arr As Variant, aux(1 To 4) As Variant
+
+    If (Workbooks.Count > 1) Then
+        For i = 1 To Workbooks.Count
+            If (Workbooks(i).Name Like "Estoque*" And Workbooks(i).Name <> ThisWorkbook.Name) Then
+                Set wb = Workbooks(i)
+                Exit For
+            End If
+        Next
+    End If
+    
+    If (wb Is Nothing) Then
+        str = Application.GetOpenFilename("Planilha do Microsoft Excel (.xlsx)", ".xlsx")
+        If (str = CStr(False)) Then Exit Sub
+        Workbooks.Open str, , True
+    End If
+    
+    Set tbl = wb.Sheets("Cadastro").ListObjects(1)
+    wData = tbl.Range.Value2
+    
+    For i = 2 To UBound(wData, 1)
+        aux(1) = wData(i, 2)
+        aux(2) = wData(i, 4)
+        aux(3) = wData(i, 5)
+        aux(4) = wData(i, 6)
+        arr = geraVetorCadXML(aux, aux(4), getEstoque(wData(i, 4), wb.Sheets("Estoque")))
+        Set rng = buscaProduto(aux(2), 2)
+        If (rng Is Nothing) Then
+            Call cadastraProduto(arr, True)
+        Else
+            Call atualizaProduto(arr, rng, True)
+        End If
+    Next
+
+End Sub

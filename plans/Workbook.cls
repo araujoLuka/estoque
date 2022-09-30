@@ -16,6 +16,10 @@ Private Sub Workbook_Open()
         
     Application.ScreenUpdating = False
     Call logout
+    With Sheets("empty")
+        .Visible = xlSheetVisible
+        .Activate
+    End With
     Application.DisplayFullScreen = True
     Sheets("Acesso").Activate
     Sheets("empty").Visible = xlSheetVeryHidden
@@ -26,6 +30,10 @@ End Sub
 Private Sub Workbook_BeforeClose(Cancel As Boolean)
         
     Call logout
+    With Sheets("empty")
+        .Visible = xlSheetVisible
+        .Activate
+    End With
     Application.DisplayFullScreen = False
     Save
 

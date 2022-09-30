@@ -46,11 +46,12 @@ End Sub
 Sub logout()
     Dim ws As Worksheet
 
+    ThisWorkbook.Activate
     Application.ScreenUpdating = False
     If (TypeName(Application.Caller) = "String") Then
         If (MsgBox("Encerrar sua sessão?", vbQuestion + vbYesNo) = vbNo) Then Exit Sub
     End If
-    For Each ws In ActiveWorkbook.Worksheets
+    For Each ws In ThisWorkbook.Worksheets
         If (ws.Name = "Acesso") Then
             ws.Visible = xlSheetVisible
             ws.Activate
@@ -61,10 +62,6 @@ Sub logout()
             ws.Visible = xlSheetVeryHidden
         End If
     Next
-    With Sheets("empty")
-        .Visible = xlSheetVisible
-        .Activate
-    End With
     Range("actv") = ""
     Application.ScreenUpdating = True
     

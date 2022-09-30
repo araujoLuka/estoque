@@ -7,8 +7,16 @@
 - **Linguagem**: VBA
 - **Plataforma**: Windows
 
+# **Sumario**
+1. [Arquivos do Repositório](#arquivos-do-repositorio)
+    - [Diretorios](#diretorios)
+    - [Anotações](#anotações)
+    - [Executavel](#executavel)
+2. [Passo a Passo](#passo-a-passo)
+3. [Feedback](#feedback)
+
 # **Arquivos do repositorio**
-A estruturação do repositorio se dá por [Diretorios](#diretorios), [Anotações](#anotações) e [Executavel](#execução)
+A estruturação do repositorio se dá por *Diretorios*, *Anotações* e *Executavel*
 
 ## Diretorios
 Os diretórios presentes nesse projeto são definidos da seguinte forma:
@@ -20,19 +28,22 @@ Os diretórios presentes nesse projeto são definidos da seguinte forma:
 
 ## Anotações
 As informações principais do projeto são documentadas nos seguintes arquivos: 
-- **update_notes** - contem notas a respeito da ultima atualização do projeto
-- **work_notes** - contem notas a respeito das tarefas a serem realizadas para melhorar o projeto
+- **[update_notes](https://github.com/araujoLuka/estoque/blob/main/update_notes.md)** - contem notas a respeito da ultima atualização do projeto
+- **[work_notes](https://github.com/araujoLuka/estoque/blob/main/work_notes.md)** - contem notas a respeito das tarefas a serem realizadas para melhorar o projeto
 - **readme** - contem informações sobre o repositorio e instruções de uso da planilha
 
-## Execução
+## Executavel
 Os recursos necessarios para utilizar o sistema são Pacote Office 2016 e sistema operacional Windows
 O passo-a-passo a seguir instrui como baixar e utilizar:
-### Passo-a-passo
+
+# Passo-a-passo
 1. Baixe o arquivo *Estoque.xlsm* e a pasta *resources*
 2. Coloque ambos os arquivos em uma pasta com um nome a sua escolha (Ex.: "Estoque")
 3. Acesse a pasta criada e clique com o botão direito do mouse no arquivo de Excel *Estoque*
 4. Clique em *"Criar Atalho"* e mova o atalho para *Área de Trabalho* (Ou para o local aonde deseja acessar a planilha)
-5. Execute o atalho e acesse a planilha
+5. Execute o atalho
+6. Habilite as macros e o conteudo
+7. Acesse a planilha
     - Para acessar o sistema
         - **usuario:** admin
         - **senha:** admin

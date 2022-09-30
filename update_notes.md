@@ -1,4 +1,17 @@
-# **Anotações de Atualizações Realizadas** *(Atualização 2.10)*
+# **Anotações de Atualizações Realizadas** *(Atualização 2.1.1)*
+
+## Correções 2.1.1
+- Corrigido bug ao importar XML (referência à uma planilha excluida)
+- Corrigido bug ao buscar em tabela vazia (analisado todas as funções)
+- Corrigido erro visual do nome de usuario nas planilhas
+- Corrigido erro em nome de usuario na planilha *Controle*
+- Corrigido falha no modulo *iconScripts* que impedia utilizar as imagens de icones da pasta *resources*
+
+# Adições 2.1.1
+- Novo Sub *importarCadastro* no modulo *cadScripts*
+	- Importa os dados de cadastro e estoque de uma planilha de versão anterior
+- Novo Sub *limparPlanilha* no modulo *functions*
+	- Elimina todos os produtos cadastrados e registros de movimentações
 
 ## Modulo *xmlScripts*
 - Entrada por XML implementada e testada

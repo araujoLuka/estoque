@@ -73,15 +73,21 @@ Sub removeEstoque(ByVal pCod As Integer)
     Next
 End Sub
 
-Function getEstoque(ByVal cod As Integer) As Integer
+Function getEstoque(ByVal cod As Integer, Optional sh As Worksheet) As Integer
     Dim rng As Range
+    Dim c As Integer
     
-    getEstoque = -1
+    getEstoque = 0
     
-    Set rng = buscaProduto(cod, 2, Sheets("Estoque"))
+    If (sh Is Nothing) Then Set sh = Sheets("Estoque")
+    
+    Set rng = buscaProduto(cod, 2, sh)
     If (rng Is Nothing) Then Exit Function
     
-    getEstoque = rng.Value2(1, 7)
+    c = defineColuna(rng.ListObject, "ESTOQUE")
+    
+    If (c = 0) Then Exit Function
+    getEstoque = rng.Value2(1, c)
 
 End Function
 

@@ -73,16 +73,13 @@ Function buscaProduto(ByVal bValue As Variant, ByVal bType As Integer, Optional 
     
     If (bSheet Is Nothing) Then Set bSheet = Sheets("Cadastro")
     
-    bArray = bSheet.ListObjects(1).Range.Value
+    c = defineColuna(bSheet.ListObjects(1), str)
+    If (c = 0) Then Exit Function
     
-    For c = 1 To UBound(bArray, 2)
-        If (bArray(1, c) Like str) Then Exit For
-    Next
-    
-    If (c > UBound(bArray, 2)) Then Exit Function
-    
+    bArray = bSheet.ListObjects(1).ListColumns(c).Range.Value2
+        
     For i = 2 To UBound(bArray, 1)
-        If (bArray(i, c) = bValue) Then
+        If (bArray(i, 1) = bValue) Then
             Set buscaProduto = bSheet.ListObjects(1).ListRows(i - 1).Range
             Exit For
         End If
@@ -184,16 +181,16 @@ Function validaMovim(ByVal cHerdeiro As String, tipo As Integer) As Boolean
     
     If (Not IsNumeric(cHerdeiro)) Then Exit Function
     
-    aArray = tbl.HeaderRowRange.Value
+    aArray = tbl.HeaderRowRange.Value2
     For i = 1 To tbl.HeaderRowRange.Count
         If (aArray(1, i) = "CODIGO HERDEIRO") Then
             Exit For
         End If
     Next
     
-    aArray = tbl.ListColumns(i).DataBodyRange.Value
-    bArray = tbl.ListColumns(tbl.ListColumns.Count).DataBodyRange.Value
-    For i = 1 To tbl.ListRows.Count
+    aArray = tbl.ListColumns(i).Range.Value2
+    bArray = tbl.ListColumns(tbl.ListColumns.Count).Range.Value
+    For i = 2 To tbl.ListRows.Count
         If (aArray(i, 1) = CCur(cHerdeiro)) Then
             x = x + bArray(i, 1)
         End If
@@ -378,5 +375,36 @@ Sub highlightSelection(ByVal Target As Range)
             End With
         End With
     End With
-
 End Sub
+
+Function defineColuna(ByVal tbl As ListObject, ByVal nm As String) As Integer
+    Dim i As Integer
+    Dim arr As Variant
+    
+    arr = tbl.HeaderRowRange.Value2
+    
+    For i = 1 To UBound(arr, 2)
+        If (arr(1, i) Like nm) Then Exit For
+    Next
+    
+    defineColuna = i
+    If (i > UBound(arr, 2)) Then defineColuna = 0
+End Function
+
+Sub limparPlanilha()
+    Dim ws As Worksheet
+    Dim tbl As ListObject
+    Dim i As Integer, tam As Integer
+    
+    Set ws = Sheets("Cadastro")
+    Set tbl = ws.ListObjects(1)
+    
+    tam = tbl.ListRows.Count
+    
+    If (tam = 0) Then Exit Sub
+    
+    For i = tam To 1 Step -1
+        Call removeProduto(tbl.ListRows(i).Range, True, True)
+    Next
+End Sub
+

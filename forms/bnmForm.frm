@@ -63,7 +63,7 @@ End Sub
 Private Sub pList_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
     With mvmForm
         .box1 = pList.List(pList.ListIndex, 2)
-        travaCampo mvmForm, pList.List(pList.ListIndex, 3)
+        travaCampo .box2, pList.List(pList.ListIndex, 3)
         .box3.SetFocus
     End With
     Unload Me

@@ -13,8 +13,8 @@ Option Explicit
 
 ' \\\ Constantes que sao usadas no modulo ///
 ' Caminhos de imagens para icones
-Private Const EDIT_PATH As String = "\resources\edit_icon1.png"
-Private Const REM_PATH As String = "\resources\rem_icon2.png"
+Private Const EDIT_PATH As String = "\resources\icons\edit_icon1.png"
+Private Const REM_PATH As String = "\resources\icons\rem_icon2.png"
 
 ' Espaco entre icones
 Private Const IC_SPACE As Integer = 15
@@ -154,7 +154,7 @@ Sub editIcon_add(ws As Worksheet, ByVal rng As Range, ByVal rw As Integer, pos A
     y = rng.Top + rng.Height / 2 - size / 2
     
     ' Define o caminho da imagem do icone
-    imgPath = ActiveWorkbook.Path & EDIT_PATH & "x"
+    imgPath = ActiveWorkbook.Path & EDIT_PATH
     
     ' Verifica se existe um arquivo no caminho definido
     If (Dir(imgPath) <> "") Then
@@ -171,8 +171,6 @@ Sub editIcon_add(ws As Worksheet, ByVal rng As Range, ByVal rw As Integer, pos A
     
     ' Define o nome do icone
     pic.Name = "edit" & "_" & rw    '("edit_" + 'numero da linha')
-    
-    ws.Hyperlinks.Add pic, "", ScreenTip:="Editar"
     
     ' Define a acao de clique do icone
     pic.OnAction = "'" & ActiveWorkbook.Name & "'!" & "iniciaAtualiz"
@@ -220,7 +218,7 @@ Sub remIcon_add(ws As Worksheet, ByVal rng As Range, ByVal rw As Integer, pos As
     y = rng.Top + rng.Height / 2 - size / 2
     
     ' Define o caminho da imagem do icone
-    imgPath = ActiveWorkbook.Path & REM_PATH & "2"
+    imgPath = ActiveWorkbook.Path & REM_PATH
     
     ' Verifica se existe um arquivo no caminho definido
     If (Dir(imgPath) <> "") Then

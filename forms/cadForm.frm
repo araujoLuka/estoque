@@ -47,9 +47,7 @@ Private Sub cadBtn_Click()
     n_box = countFormTBX(Me)
 
     ' Impede a execucao se os campos obrigatorios nao estiverem preenchidos
-    If (Not validaForm(Me, Me.Name, n_box)) Then
-        Exit Sub
-    End If
+    If (Not validaForm(Me, Me.Name, n_box)) Then Exit Sub
     
     Application.ScreenUpdating = False
     
@@ -222,4 +220,11 @@ End Sub
 
 Private Sub box4_Exit(ByVal Cancel As MSForms.ReturnBoolean)
     p = False
+    
+    ' Verifica se o formulario esta preenchido e se limite de estoque no form eh diferente da tabela
+    If (cadCheck) Then
+        If (CInt(box4) <> pRng.Cells(1, 6)) Then
+            box4.BackColor = RGB(255, 255, 0) ' Se verdadeiro, preenche o campo na cor amarela
+        End If
+    End If
 End Sub

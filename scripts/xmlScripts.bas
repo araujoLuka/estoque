@@ -8,15 +8,12 @@ Sub entradaXML()
 End Sub
 
 Sub movXML()
-    Dim ws As Worksheet
     Dim rng As Range
     Dim mat As Variant, arr As Variant
     Dim i As Integer, j As Integer
     Dim dt As Date, tm As Date
     Dim res As VbMsgBoxResult
     
-    Set ws = ActiveSheet
-    Sheets("Transition").Activate
     Application.ScreenUpdating = False
     
     dt = Date
@@ -28,6 +25,7 @@ Sub movXML()
     If (IsEmpty(mat)) Then Exit Sub
     
     With Sheets("Entrada").ListObjects(1)
+        If (.ListRows.Count = 0) Then Exit Do
         If (Not .ListColumns(.ListColumns.Count).DataBodyRange.Find(("*" & mat(0))) Is Nothing) Then
             MsgBox "Nota " & mat(0) & " ja registrada!", vbCritical
         Else
@@ -68,7 +66,6 @@ Sub movXML()
     Next
     
     Unload xmlForm
-    ws.Activate
     Application.ScreenUpdating = True
 
 End Sub

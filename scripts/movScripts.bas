@@ -262,7 +262,18 @@ Function trataMotiv(u As UserForm) As String
                 Exit For
             End If
         Next
-        If (i > 4) Then trataMotiv = .opt_o_txt
+        If (i > 4) Then
+            If (.Controls("opt_o") = True) Then
+                If (.opt_o_txt = "") Then
+                    MsgBox "Para outras motivaçoes, digite manualmente uma motivação!", _
+                           vbInformation, "Aviso do Sistema"
+                End If
+            Else
+                MsgBox "Necessario definir um motivo para registrar movimentação de estoque!", _
+                       vbCritical, "Erro Critico"
+            End If
+            trataMotiv = .opt_o_txt
+        End If
     End With
     
     trataMotiv = UCase(trataMotiv)
@@ -334,10 +345,10 @@ Sub removeMovimMult(ByVal pCod As Integer)
 
     Set ws = Sheets("Controle")
     Set tbl = ws.ListObjects(1)
-    arr = tbl.ListColumns(6).DataBodyRange.Value2
+    arr = tbl.ListColumns(6).Range.Value2
     
     For i = UBound(arr, 1) To 1 Step -1
-        If (pCod = arr(i, 1)) Then Call removeMovim("rem_" & i, i)
+        If (pCod = arr(i, 1)) Then Call removeMovim("rem_" & i - 1, i - 1)
     Next
 End Sub
 
