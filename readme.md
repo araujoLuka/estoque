@@ -27,7 +27,7 @@ As informações principais do projeto são documentadas nos seguintes arquivos:
 ## Execução
 Os recursos necessarios para utilizar o sistema são Pacote Office 2016 e sistema operacional Windows
 O passo-a-passo a seguir instrui como baixar e utilizar:
-###Passo-a-passo
+### Passo-a-passo
 1. Baixe o arquivo *Estoque.xlsm* e a pasta *resources*
 2. Coloque ambos os arquivos em uma pasta com um nome a sua escolha (Ex.: "Estoque")
 3. Acesse a pasta criada e clique com o botão direito do mouse no arquivo de Excel *Estoque*
