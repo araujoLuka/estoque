@@ -6,12 +6,12 @@
 - sub *movXML* atualizado
 	- Carrega o XML em uma matriz
 	- Exibe uma tabela na tela com o formulario *xmlForm*
-		> Leia sobre o novo formulario [xmlForm](##Formulario-de-Login) para mais informações
+		> Leia sobre o novo formulario [xmlForm](#formulario-de-login) para mais informações
 	- Se confirmado a movimentação, checa se os produtos estão cadastrados/atualizados
 		- Caso não estejam, usa a nova function *geraVetorCadXML*
-			> Leia atualizações do módulo [cadScripts](##Modulo-*cadScripts*) para mais informações
+			> Leia atualizações do módulo [cadScripts](#modulo-cadscripts) para mais informações
 		- Para registrar a movimentação usa-se a nova function *geraVetorMovXML*
-			> Leia atualizações do modulo [movScripts](##Modulo-*movScripts*) para mais informações
+			> Leia atualizações do módulo [movScripts](#modulo-movscripts) para mais informações
 - Nova Function *checkData*
 	- Recebe dois parametros:
 		- Vetor com informações cadastradas
@@ -57,7 +57,7 @@
 ## Formulario de Login
 - Novo nome *logginForm*
 - Atualizado para chamar procedimento *loggin_A*
-	> Leia alterações do módulo [logScripts](##Modulo-*logScripts*) para mais informações
+	> Leia alterações do módulo [logScripts](#modulo-logscripts) para mais informações
 - Corrigido ponteiro dinamico do mouse
 - Corrigido bug ao tentar logar com campos em branco
 
@@ -77,7 +77,7 @@
 		- Intervalo que indica o ultimo acesso
 	- Apos finalizar acesso verifica se o ultimo acesso é diferente da data atual
 		- Se sim, exibe uma mensagem de boas-vindas
-		> Leia o topiceo [Outras atualizações](##Outras-atualizações) para mais informações sobre 'ultimo acesso'
+		> Leia o topico [Outras atualizações](#outras-atualizações) para mais informações sobre 'ultimo acesso'
 
 ## Modulo *tblScripts*
 - Sub *sortCad* renomeado para *sortTbl* e atualizado
