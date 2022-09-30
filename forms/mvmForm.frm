@@ -13,6 +13,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 Option Explicit
 
 Private Sub UserForm_Initialize()
@@ -94,9 +95,9 @@ Private Sub addBtn_Click()
         Exit Sub
     End If
 
-    Call insereDadoLista(Me.pList, geraVetorMvm(cdHerd, pArray, box3))
-
-    Call clearForm(Me)
+    If (insereDadoLista(Me.pList, geraVetorMvm(cdHerd, pArray, box3), 0)) Then
+        Call clearForm(Me)
+    End If
     
 End Sub
 
@@ -130,11 +131,11 @@ Private Sub subBtn_Click()
     End If
     
     ' Impede a insercao na lista se a quantidade a ser removida eh maior do que o estoque
-    If (Not validaEstoque(box3, buscaProduto(cod, index, Sheets("Estoque"))(1, 6))) Then Exit Sub
+    If (Not validaEstoque(box3, getEstoque(cod))) Then Exit Sub
 
-    Call insereDadoLista(Me.pList, geraVetorMvm(cdHerd, pArray, -box3))
-    
-    Call clearForm(Me)
+    If (insereDadoLista(Me.pList, geraVetorMvm(cdHerd, pArray, -box3), 0)) Then
+        Call clearForm(Me)
+    End If
 
 End Sub
 

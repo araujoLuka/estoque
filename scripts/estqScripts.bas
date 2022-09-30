@@ -33,7 +33,7 @@ Sub criaEstoque()
     
 End Sub
 
-Sub atualizaEstoque(ByVal cod As Integer, qtd As Variant)
+Sub atualizaEstoque(ByVal cod As Integer, ByVal qtd As Variant)
     Dim ws As Worksheet
     Dim eRng As Range
     Dim i As Integer
@@ -54,9 +54,40 @@ Sub atualizaEstoque(ByVal cod As Integer, qtd As Variant)
     eRng.Cells(1, i) = eRng.Cells(1, i) + qtd
 End Sub
 
+Sub removeEstoque(ByVal pCod As Integer)
+    Dim ws As Worksheet
+    Dim cTabble As ListObject
+    Dim arr As Variant
+    Dim i As Integer
+
+    Set ws = Sheets("Estoque")
+    Set cTabble = ws.ListObjects(1)
+    
+    arr = cTabble.ListColumns(4).Range.Value2
+    
+    For i = 1 To UBound(arr, 1)
+        If (pCod = arr(i, 1)) Then
+            Call deleteRow(ws, cTabble.ListRows(i - 1).Range)
+            Exit For
+        End If
+    Next
+End Sub
+
+Function getEstoque(ByVal cod As Integer) As Integer
+    Dim rng As Range
+    
+    getEstoque = -1
+    
+    Set rng = buscaProduto(cod, 2, Sheets("Estoque"))
+    If (rng Is Nothing) Then Exit Function
+    
+    getEstoque = rng.Value2(1, 7)
+
+End Function
+
 Function geraVetorEstoque(pRow As Range, Optional ByVal estq As Integer, _
                             Optional ByVal obsv As String, Optional ByVal vetCad As Variant) As Variant
-    Dim vet(1 To 8) As Variant
+    Dim vet(1 To 9) As Variant
     Dim i As Integer
     Dim tName As String
     
@@ -69,16 +100,18 @@ Function geraVetorEstoque(pRow As Range, Optional ByVal estq As Integer, _
         vetCad = vet
     End If
     
-    vet(1) = vetCad(1)
-    vet(2) = vetCad(2)
-    vet(3) = vetCad(4)
-    vet(4) = vetCad(5)
-    vet(5) = "=INDEX(" & tName & "[LIMITE DE ESTOQUE]," & _
+    For i = 1 To 5
+        vet(i) = vetCad(i)
+    Next
+    vet(i) = "=INDEX(" & tName & "[LIMITE DE ESTOQUE]," & _
                 "MATCH([@[CODIGO INTERNO]]," & tName & "[CODIGO INTERNO],0))"
-    vet(6) = estq
-    vet(7) = obsv
-    vet(8) = "=IF($G" & pRow.Row & "<$F" & pRow.Row & ",""COMPRAR URGENTE""," & _
-                "IF($G" & pRow.Row & "<=CEILING.MATH($F" & pRow.Row & "*1.6),""ESTOQUE BAIXO"",""OK""))"
+    i = i + 1
+    vet(i) = estq
+    i = i + 1
+    vet(i) = obsv
+    i = i + 1
+    vet(i) = "=IF($H" & pRow.Row & "<$G" & pRow.Row & ",""COMPRAR URGENTE""," & _
+                "IF($H" & pRow.Row & "<=CEILING.MATH($G" & pRow.Row & "*1.6),""ESTOQUE BAIXO"",""OK""))"
 
     geraVetorEstoque = vet
 End Function
@@ -144,7 +177,10 @@ Sub listaCompra()
         End If
     Next
     
-    If (tam = 0) Then Exit Sub
+    If (tam = 0) Then
+        MsgBox "Não há produtos para compra urgente!", vbExclamation
+        Exit Sub
+    End If
     
     Call criaLista(lst, tam, 1)
     
@@ -170,7 +206,10 @@ Sub listaEstoqueB()
         End If
     Next
     
-    If (tam = 0) Then Exit Sub
+    If (tam = 0) Then
+        MsgBox "Não há produtos com estoque baixo!", vbExclamation
+        Exit Sub
+    End If
     
     Call criaLista(lst, tam, 2)
     

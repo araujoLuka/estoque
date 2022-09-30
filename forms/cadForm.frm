@@ -13,6 +13,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 Option Explicit
 
 Private pRng As Range
@@ -58,7 +59,7 @@ Private Sub cadBtn_Click()
     If (cadCheck) Then
         Call atualizaProduto(vet(), pRng)
     Else 'Senao cadastra o produto
-        Call cadastraProduto(vet())
+        Call cadastraProduto(vet)
     End If
     
     If (Not cadFast) Then

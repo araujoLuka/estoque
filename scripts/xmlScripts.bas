@@ -3,36 +3,73 @@ Option Explicit
 
 Sub entradaXML()
     
-    MsgBox "Entrada por nota fiscal ainda em desenvolvimento", vbExclamation
+    Call movXML
     
 End Sub
 
 Sub movXML()
-    Dim mat As Variant
-    Dim arr As Variant
+    Dim ws As Worksheet
+    Dim rng As Range
+    Dim mat As Variant, arr As Variant
     Dim i As Integer, j As Integer
+    Dim dt As Date, tm As Date
+    Dim res As VbMsgBoxResult
     
+    Set ws = ActiveSheet
+    Sheets("Transition").Activate
+    Application.ScreenUpdating = False
+    
+    dt = Date
+    tm = Time
+    
+    Do
     mat = import_XML
     
-    For i = 1 To UBound(mat, 1)
-        Set arr = buscaProduto(mat(i)(2), 2)
-        If (Not arr Is Nothing) Then
-            arr = arr.Value2
-            For j = 1 To UBound(mat(i)) - 1
-                If (IsNumeric(mat(i)(j))) Then
-                    If (mat(i)(j) <> arr(1, j * 2)) Then
-                        Debug.Print mat(i)(j) & " <> " & arr(1, j * 2)
-                    End If
-                Else
-                    If (mat(i)(j) <> arr(1, j + 2)) Then
-                        Debug.Print mat(i)(j) & " <> " & arr(1, j + 2)
-                    End If
-                End If
-            Next
+    If (IsEmpty(mat)) Then Exit Sub
+    
+    With Sheets("Entrada").ListObjects(1)
+        If (Not .ListColumns(.ListColumns.Count).DataBodyRange.Find(("*" & mat(0))) Is Nothing) Then
+            MsgBox "Nota " & mat(0) & " ja registrada!", vbCritical
         Else
-            Debug.Print mat(i)(3) & " não cadastrado!"
+            Exit Do
         End If
+    End With
+    Loop
+    
+    Load xmlForm
+    For i = 1 To UBound(mat)
+        Call insereDadoLista(xmlForm.pList, mat(i), 1)
     Next
+    xmlForm.Show
+    
+    If (Not IsUserFormLoaded("xmlForm")) Then Exit Sub
+    
+    For i = 1 To UBound(mat, 1)
+        Set rng = buscaProduto(mat(i)(2), 2)
+        If (Not rng Is Nothing) Then
+            arr = rng.Value2
+            If (Not checkData(arr, mat(i))) Then
+                arr = geraVetorCadXML(mat(i), arr(1, 6), getEstoque(arr(1, 4)))
+                Call atualizaProduto(arr, rng)
+            End If
+        Else
+            res = MsgBox(mat(i)(3) & " não cadastrado!" & vbCrLf & vbCrLf & _
+                         "Deseja cadastrar?", vbQuestion + vbYesNo)
+            If (res = vbYes) Then
+                arr = geraVetorCadXML(mat(i))
+                Call cadastraProduto(arr)
+            End If
+        End If
+        arr = geraVetorMovXML(mat(i), mat(0), dt, tm)
+        
+        Call regEntrada(arr)
+        Call regMovimentacao(arr)
+        Call atualizaEstoque(mat(i)(2), mat(i)(4))
+    Next
+    
+    Unload xmlForm
+    ws.Activate
+    Application.ScreenUpdating = True
 
 End Sub
 
@@ -81,7 +118,6 @@ Function import_XML() As Variant
     wb.Close False
     
     import_XML = xMatrix
-    Application.ScreenUpdating = True
 
 End Function
 
@@ -169,3 +205,45 @@ Function getData(arr As Variant, ByVal tam As Integer, ByRef i As Integer, _
     Next
 End Function
 
+Function checkData(cad As Variant, vet As Variant) As Boolean
+    Dim i As Integer
+    Dim dif As Boolean
+    Dim res As VbMsgBoxResult
+    
+    checkData = False
+    
+    For i = 1 To UBound(vet) - 1
+        If (IsNumeric(vet(i)) Or i = 1) Then
+            If (CStr(vet(i)) <> CStr(cad(1, i * 2))) Then
+                Debug.Print vet(i) & " <> " & cad(1, i * 2)
+                res = MsgBox("Existem dados desatualizados para o produto:" & vbCrLf & _
+                             "'" & vet(3) & "'" & vbCrLf & vbCrLf & _
+                             "CODIGO DO CADASTRO: " & cad(1, i * 2) & vbCrLf & _
+                             "CODIGO NA NOTA FISCAL: " & vet(i) & vbCrLf & vbCrLf & _
+                             "Deseja atualizar?", vbQuestion + vbYesNo)
+                If (res = vbNo) Then
+                    vet(i) = cad(1, i * 2)
+                Else
+                    dif = True
+                End If
+            End If
+        Else
+            If (vet(i) <> cad(1, i + 2)) Then
+                Debug.Print vet(i) & " <> " & cad(1, i + 2)
+                res = MsgBox("Existem dados desatualizados para o produto:" & vbCrLf & _
+                             "'" & vet(3) & "'" & vbCrLf & vbCrLf & _
+                             "NOME DO CADASTRO: " & cad(1, i + 2) & vbCrLf & _
+                             "NOME NA NOTA FISCAL: " & vet(i) & vbCrLf & vbCrLf & _
+                             "Deseja atualizar?", vbQuestion + vbYesNo)
+                If (res = vbNo) Then
+                    vet(i) = cad(1, i + 2)
+                Else
+                    dif = True
+                End If
+            End If
+        End If
+    Next
+    
+    checkData = True
+    
+End Function

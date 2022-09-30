@@ -54,7 +54,7 @@ Sub preenchecadForm(pRng As Range)
     Next
     
     With cadForm
-        .Caption = Replace(.Caption, "Cadastro", "AtualizaÃ§Ã£o")
+        .Caption = Replace(.Caption, "Cadastro", "Atualização")
         If (pRng(1, 2) = "SEM GTIN") Then
             .box1Check = True
         Else
@@ -72,7 +72,7 @@ Sub preenchecadForm(pRng As Range)
 
 End Sub
 
-Sub cadastraProduto(vet() As Variant)
+Sub cadastraProduto(vet As Variant)
     Dim ws As Worksheet
     Dim cTabble As ListObject
     Dim prodRow As Range
@@ -82,6 +82,7 @@ Sub cadastraProduto(vet() As Variant)
     j = 1
     i = 1
     
+    Application.ScreenUpdating = False
     Set ws = Sheets("Cadastro")
     Set cTabble = ws.ListObjects(1)
     Set prodRow = insereRow(cTabble)
@@ -90,7 +91,7 @@ Sub cadastraProduto(vet() As Variant)
 
     prodRow.Formula = vet
     
-    Call sortCad(cTabble)
+    Call sortTbl(cTabble)
     
     Set ws = Sheets("Estoque")
     Set cTabble = ws.ListObjects(1)
@@ -99,13 +100,18 @@ Sub cadastraProduto(vet() As Variant)
     x = geraVetorEstoque(prodRow, vet(7), "", vet)
     
     prodRow.Formula = x
-    With cTabble
-        prodRow.ClearFormats
-        .HeaderRowRange.Offset(1).Copy
-        .DataBodyRange.PasteSpecial xlPasteFormats
-    End With
-    Application.CutCopyMode = False
-
+    If (cTabble.ListRows.Count > 1) Then
+        With cTabble
+            prodRow.ClearFormats
+            .HeaderRowRange.Offset(1).Copy
+            .DataBodyRange.PasteSpecial xlPasteFormats
+        End With
+        Application.CutCopyMode = False
+    End If
+    
+    Call sortTbl(cTabble)
+    
+    Application.ScreenUpdating = True
     MsgBox "Produto '" & vet(5) & "' cadastrado com sucesso!"
 
 End Sub
@@ -118,7 +124,7 @@ Sub atualizaProduto(vet As Variant, pRow As Range)
     Dim i As Integer, w As Integer
     Dim c As Integer
     
-    wsPaths = Array("Estoque")
+    wsPaths = Array("Estoque", "Controle", "Entrada", "Saida")
     
     For i = 1 To UBound(vet) - 2
         If (Not vet(i) Like "=*") Then
@@ -136,15 +142,17 @@ Sub atualizaProduto(vet As Variant, pRow As Range)
                     If (c > UBound(arr, 2)) Then Exit For
                                             
                     ws.ListObjects(1).ListColumns(c).DataBodyRange.Replace pRow(1, i), vet(i)
+                
+                    If (ws.Name = "Estoque") Then Call sortTbl(tbl)
                 Next
             End If
         End If
     Next
     
     pName = vet(5)
-    pRow = vet
+    pRow.Formula = vet
     
-    Call sortCad(pRow.ListObject)
+    Call sortTbl(pRow.ListObject)
     
     Set pRow = buscaProduto(vet(4), 2)
     pRow.Select
@@ -156,41 +164,38 @@ End Sub
 Sub removeProduto(Optional pRow As Range)
     Dim ws As Worksheet
     Dim cTabble As ListObject
-    Dim pCod As Integer, i As Integer, rw As Integer
+    Dim pCod As Integer, rw As Integer
     Dim arr As Variant
+    Dim mbx As VbMsgBoxResult
     Dim pNm As String, icon1 As String, icon2 As String
+    
+    Set ws = Sheets("Cadastro")
+    Set cTabble = ws.ListObjects(1)
+
+    Application.ScreenUpdating = False
     
     rw = trataCaller(Application.Caller, icon1)
     If (rw = 0) Then
         rw = pRow.Row - pRow.ListObject.HeaderRowRange.Row
         icon1 = "rem_" & rw
-        icon2 = "edit_" & rw
-    Else
-        icon2 = "edit_" & rw
     End If
+    icon2 = "edit_" & rw
     
     pNm = pRow(1, 5)
     pCod = pRow(1, 4)
     
-    Set ws = Sheets("Estoque")
-    Set cTabble = ws.ListObjects(1)
-    arr = cTabble.DataBodyRange.Value2
+    mbx = MsgBox("Deseja remover os registros de movimentacao também?", vbQuestion + vbYesNoCancel)
+    If (mbx = vbCancel) Then Exit Sub
+    If (mbx = vbYes) Then Call removeMovimMult(pCod)
     
-    For i = 1 To cTabble.ListRows.Count
-        If (pCod = arr(i, 3)) Then
-            Call deleteRow(ws, cTabble.ListRows(i).Range)
-            Exit For
-        End If
-    Next
-
-    Set ws = Sheets("Cadastro")
+    Call removeEstoque(pCod)
 
     Call ajustaIcon(ws, rw, icon1)
     Call ajustaIcon(ws, rw, icon2)
     Call deleteRow(ws, pRow)
     
-    Call sortCad(cTabble)
-
+    Application.ScreenUpdating = True
+    
     MsgBox "Produto '" & pNm & "' removido com sucesso!"
 
 End Sub
@@ -199,18 +204,18 @@ Function geraVetorCad(u As UserForm, ByVal n_box As Integer) As Variant
     Dim i As Integer, j As Integer
     Dim vet(1 To 7) As Variant
     Dim rng As Range
-    Dim ws As Worksheet
-    Set rng = ActiveSheet.ListObjects(1).HeaderRowRange.Offset(1)
+    
+    Set rng = ActiveSheet.ListObjects(1).HeaderRowRange
     i = 1
     j = 1
     
-    vet(j) = "=COUNTA(" & rng(1, j + 1).Address & ":[@[CODIGO DE BARRAS]])"
+    vet(j) = "=COUNTA(" & rng(1, j + 1).Address & ":[@[CODIGO DE BARRAS]])-1"
     j = j + 1
     
     vet(j) = u.Controls("box" & i)
     j = j + 1
     
-    vet(j) = "=IF([@[CODIGO INTERNO]]="""","""",IF([@[CODIGO INTERNO]]<1000,""AP"",""Pï¿½""))"
+    vet(j) = "=IF([@[CODIGO INTERNO]]="""","""",IF([@[CODIGO INTERNO]]<1000,""AP"",""PÇ""))"
     j = j + 1
     
     With u
@@ -224,4 +229,48 @@ Function geraVetorCad(u As UserForm, ByVal n_box As Integer) As Variant
     End With
         
     geraVetorCad = vet
+End Function
+
+Function geraVetorCadXML(arr As Variant, Optional lim As Variant, Optional estq As Variant) As Variant
+    Dim i As Integer, j As Integer
+    Dim vet(1 To 7) As Variant
+    Dim rng As Range
+    
+    Set rng = Sheets("Cadastro").ListObjects(1).HeaderRowRange
+    i = 1
+    j = 1
+    
+    If (IsMissing(lim)) Then
+        lim = InputBox("Defina o limite de estoque do produto (" & arr(3) & "):")
+        If (lim = "") Then lim = 0
+    End If
+    
+    If (IsMissing(estq)) Then
+        estq = InputBox("Defina o estoque atual do produto (" & arr(3) & "):")
+        If (estq = "") Then estq = 0
+    End If
+    
+    vet(j) = "=COUNTA(" & rng(1, j + 1).Address & ":[@[CODIGO DE BARRAS]])-1"
+    j = j + 1
+    
+    vet(j) = arr(1)
+    j = j + 1
+    
+    vet(j) = "=IF([@[CODIGO INTERNO]]="""","""",IF([@[CODIGO INTERNO]]<1000,""AP"",""PÇ""))"
+    j = j + 1
+    
+    For i = 2 To UBound(arr) - 1
+        vet(j) = arr(i)
+        If (Not IsNumeric(vet(j))) Then
+            vet(j) = UCase(vet(j))
+        End If
+        j = j + 1
+    Next
+        
+    vet(j) = lim
+    j = j + 1
+    
+    vet(j) = estq
+    
+    geraVetorCadXML = vet
 End Function

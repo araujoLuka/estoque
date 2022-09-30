@@ -15,6 +15,22 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 
+Private Sub UserForm_Initialize()
+    Dim cols_wdth As String
+    cols_wdth = "50;100;100;200"
+    
+    With hList
+        .ColumnWidths = cols_wdth
+        .AddItem
+        .List(0, 0) = "ID"
+        .List(0, 1) = "CODIGO DE BARRAS"
+        .List(0, 2) = "CODIGO INTERNO"
+        .List(0, 3) = "PRODUTO"
+    End With
+    pList.ColumnWidths = cols_wdth
+    
+End Sub
+
 Private Sub CommandButton1_Click()
     Dim i As Integer, j As Integer, k As Integer
     Dim pArray() As Variant
@@ -47,24 +63,8 @@ End Sub
 Private Sub pList_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
     With mvmForm
         .box1 = pList.List(pList.ListIndex, 2)
-        .box2 = pList.List(pList.ListIndex, 3)
+        travaCampo mvmForm, pList.List(pList.ListIndex, 3)
         .box3.SetFocus
     End With
     Unload Me
-End Sub
-
-Private Sub UserForm_Initialize()
-    Dim cols_wdth As String
-    cols_wdth = "50;100;100;200"
-    
-    With hList
-        .ColumnWidths = cols_wdth
-        .AddItem
-        .List(0, 0) = "ID"
-        .List(0, 1) = "CODIGO DE BARRAS"
-        .List(0, 2) = "CODIGO INTERNO"
-        .List(0, 3) = "PRODUTO"
-    End With
-    pList.ColumnWidths = cols_wdth
-    
 End Sub

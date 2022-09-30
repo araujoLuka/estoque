@@ -45,13 +45,32 @@ Sub deleteRow(ws As Worksheet, rng As Range)
     aux.EntireRow.Hidden = True
 End Sub
 
-Sub sortCad(cTabble As ListObject)
+Sub sortTbl(cTabble As ListObject)
+    Dim c1 As Integer, c2 As Integer
+    Dim i As Integer
+    Dim arr As Variant
+    Dim s As String
 
+    arr = cTabble.Range.Value2
+    For i = 1 To UBound(arr, 2)
+        s = arr(1, i)
+        If (s = "TIPO") Then
+            c1 = i
+        ElseIf (s = "PRODUTO") Then
+            c2 = i
+        End If
+        If (c1 <> 0 And c2 <> 0) Then Exit For
+    Next
+    
+    If (i > UBound(arr, 2)) Then
+        If (c1 = 0) Then c1 = c2
+    End If
+    
     If (cTabble.ListRows.Count > 0) Then
-        cTabble.Range.Sort Key1:=cTabble.ListColumns(3), _
+        cTabble.Range.Sort Key1:=cTabble.ListColumns(c1), _
                            Order1:=xlAscending, _
                            Header:=xlYes, _
-                           Key2:=cTabble.ListColumns(5), _
+                           Key2:=cTabble.ListColumns(c2), _
                            Order2:=xlAscending, _
                            Header:=xlYes
     End If

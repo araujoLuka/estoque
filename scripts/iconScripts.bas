@@ -18,6 +18,9 @@ Private Const REM_PATH As String = "\resources\rem_icon2.png"
 
 ' Espaco entre icones
 Private Const IC_SPACE As Integer = 15
+
+' Proporcao de tamanho em relacao a celula
+Private Const PROP_SIZE As Single = 0.6
 '--------------------------------------------------------------------'
 
 ' \\\ Funcoes gerais ///
@@ -144,18 +147,32 @@ Sub editIcon_add(ws As Worksheet, ByVal rng As Range, ByVal rw As Integer, pos A
     Set rng = rng(1, rng.Columns.Count).Offset(0, 1)
     
     ' Define o tamanho do icone, baseado na celula definida anteriormente
-    size = rng.Height * 0.65
+    size = rng.Height * PROP_SIZE
 
     ' Define a posicao (x e y) do icone
     x = rng.Left + pos * IC_SPACE + pos * size - size
     y = rng.Top + rng.Height / 2 - size / 2
     
     ' Define o caminho da imagem do icone
-    imgPath = ActiveWorkbook.Path & EDIT_PATH
+    imgPath = ActiveWorkbook.Path & EDIT_PATH & "x"
     
-    ' Inclui o icone com os dados anteriores
-    Set pic = ws.Shapes.AddPicture(imgPath, False, True, x, y, size, size)
-    pic.Name = "edit" & "_" & rw    ' Nomeia o icone ("edit_" + 'nï¿½ da linha')
+    ' Verifica se existe um arquivo no caminho definido
+    If (Dir(imgPath) <> "") Then
+        ' Se sim, inclui o icone com a imagem
+        Set pic = ws.Shapes.AddPicture(imgPath, False, True, x, y, size, size)
+    Else
+        ' Senão, simula um icone com um circulo
+        Set pic = ws.Shapes.AddShape(msoShapeOval, x, y, size, size)
+        pic.Fill.ForeColor.RGB = RGB(255, 255, 45)
+        pic.Line.Visible = msoTrue
+        pic.Line.ForeColor.RGB = RGB(20, 20, 20)
+        pic.Line.Weight = 1
+    End If
+    
+    ' Define o nome do icone
+    pic.Name = "edit" & "_" & rw    '("edit_" + 'numero da linha')
+    
+    ws.Hyperlinks.Add pic, "", ScreenTip:="Editar"
     
     ' Define a acao de clique do icone
     pic.OnAction = "'" & ActiveWorkbook.Name & "'!" & "iniciaAtualiz"
@@ -182,6 +199,9 @@ Function deleteEditIcon(ws As Worksheet, ByVal rw As Integer) As Boolean
     deleteEditIcon = True
     
 End Function
+'--------------------------------------------------------------------'
+
+' \\\ Funcoes - Icone de Edicao ///
 
 ' Adiciona um icone de remocao
 Sub remIcon_add(ws As Worksheet, ByVal rng As Range, ByVal rw As Integer, pos As Integer)
@@ -189,17 +209,36 @@ Sub remIcon_add(ws As Worksheet, ByVal rng As Range, ByVal rw As Integer, pos As
     Dim pic As Shape
     Dim imgPath As String
     
+    ' Define a celula aonde o icone ira ser inserido
     Set rng = rng(1, rng.Columns.Count).Offset(0, 1)
-    size = rng.Height * 0.65
+    
+    ' Define o tamanho do icone, baseado na celula definida anteriormente
+    size = rng.Height * PROP_SIZE
 
-    x = rng.Left + pos * (IC_SPACE + size) - size
-    y = rng.Top + (rng.Height / 2) - (size / 2.3)
+    ' Define a posicao (x e y) do icone
+    x = rng.Left + pos * IC_SPACE + pos * size - size
+    y = rng.Top + rng.Height / 2 - size / 2
     
-    imgPath = ActiveWorkbook.Path & REM_PATH
+    ' Define o caminho da imagem do icone
+    imgPath = ActiveWorkbook.Path & REM_PATH & "2"
     
-    Set pic = ws.Shapes.AddPicture(imgPath, False, True, x, y, size, size)
-    pic.Name = "rem" & "_" & rw
+    ' Verifica se existe um arquivo no caminho definido
+    If (Dir(imgPath) <> "") Then
+        ' Se sim, inclui o icone com a imagem
+        Set pic = ws.Shapes.AddPicture(imgPath, False, True, x, y, size, size)
+    Else
+        ' Senão, simula um icone com um circulo
+        Set pic = ws.Shapes.AddShape(msoShapeOval, x, y, size, size)
+        pic.Fill.ForeColor.RGB = RGB(255, 45, 45)
+        pic.Line.Visible = msoTrue
+        pic.Line.ForeColor.RGB = RGB(20, 20, 20)
+        pic.Line.Weight = 1
+    End If
     
+    ' Define o nome do icone
+    pic.Name = "rem" & "_" & rw    '("rem_" + 'numero da linha')
+    
+    ' Define a acao de clique do icone
     pic.OnAction = "'" & ActiveWorkbook.Name & "'!" & "remIcon_event"
     
 End Sub
@@ -238,19 +277,20 @@ Sub remIcon_event()
 
     Select Case ws.Name
         Case "Cadastro"
-            Union(Range("A1"), ws.ListObjects(1).ListRows(rw).Range).Select
-            mbResult = MsgBox("Deseja excluir registro selecionado?", vbYesNo, "Exclusao de cadastro?")
+            Union(Range("A" & rw), ws.ListObjects(1).ListRows(rw).Range).Select
+            mbResult = MsgBox("Deseja excluir registro selecionado?", _
+                              vbQuestion & vbYesNo, "Exclusao de cadastro?")
             If (mbResult = vbYes) Then Call removeProduto(ws.ListObjects(1).ListRows(rw).Range)
             
         Case "Controle"
-            Union(Range("A1"), ws.ListObjects(1).ListRows(rw).Range).Select
-            mbResult = MsgBox("Deseja excluir registro selecionado?", vbYesNo, "Exclusao de movimentaï¿½ï¿½o?")
-            If (mbResult = vbYes) Then Call remMov(nm, rw)
+            Union(Range("A" & rw), ws.ListObjects(1).ListRows(rw).Range).Select
+            mbResult = MsgBox("Deseja excluir registro selecionado?", _
+                              vbQuestion & vbYesNo, "Exclusao de movimentacao?")
+            If (mbResult = vbYes) Then Call removeMovim(nm, rw)
             
         Case Else
             MsgBox "Ainda nao tem funcao para essa planilha..."
             
     End Select
-    
-    Range("A1").Select
 End Sub
+'--------------------------------------------------------------------'

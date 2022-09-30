@@ -13,6 +13,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 Option Explicit
 Private pRng As Range
 
@@ -120,7 +121,7 @@ Private Sub subBtn_Click()
     If (Not validaMovim(boxH, 1)) Then Exit Sub
     
     ' Impede a execucao se a quantidade a ser removida eh maior do que o estoque
-    If (Not validaEstoque(box4, buscaProduto(box2, 2, Sheets("Estoque"))(1, 6))) Then Exit Sub
+    If (Not validaEstoque(box4, getEstoque(box2))) Then Exit Sub
     
     box4 = -box4
     vet = geraVetorMov(Me, Me.Name, boxH, mtv, n_box)

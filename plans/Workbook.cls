@@ -7,25 +7,26 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = True
+Option Explicit
+
+Private Const BACKUP_DIR As String = "\others\"
+Private Const BACKUP_FILENAME As String = BACKUP_DIR & "backup.xlsx"
+
 Private Sub Workbook_Open()
-    
+        
+    Application.ScreenUpdating = False
     Call logout
-    Application.DisplayFormulaBar = False
     Application.DisplayFullScreen = True
-    With Sheets("empty")
-        .Visible = xlSheetVisible
-        .Activate
-        .Visible = xlSheetVeryHidden
-    End With
     Sheets("Acesso").Activate
+    Sheets("empty").Visible = xlSheetVeryHidden
+    Application.ScreenUpdating = True
     
 End Sub
 
 Private Sub Workbook_BeforeClose(Cancel As Boolean)
-    
+        
     Call logout
     Application.DisplayFullScreen = False
-    Application.DisplayFormulaBar = True
     Save
 
 End Sub

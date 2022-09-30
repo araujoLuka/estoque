@@ -1,40 +1,45 @@
 Attribute VB_Name = "logScripts"
 Option Explicit
 
-Sub loggin()
+Sub iniciaLoggin()
     Dim usrRng As Range
     Set usrRng = Range("actv")
     
-    logForm.Show
+    logginForm.Show
     While (usrRng.Value = "")
         MsgBox "Necessario logar para acessar a planilha!", vbExclamation
-        logForm.Show
+        logginForm.Show
     Wend
 
 End Sub
 
-Sub loggin_A()
+Sub loggin_A(Optional ByVal user As String, Optional ByVal pass As String)
     Dim ws As Worksheet
-    Dim usrRng As Range
-    Dim user As Object, pass As Object
-    Dim key As String
-    Dim tp As Integer
+    Dim rng As Range
+    Dim arr As Variant
     
     Set ws = Sheets("Acesso")
-    Set usrRng = Range("actv")
-    Set user = ws.OLEObjects("TextBox1").Object
-    Set pass = ws.OLEObjects("TextBox2").Object
     
-    key = buscaAcesso(user.Value, tp)
-    
-    If (key <> pass.Value) Then
-        MsgBox "Usuario/senha invalidos!"
-    Else
-        Call planAccess(user.Value, tp)
-        user.Value = ""
-        pass.Value = ""
-        ws.Shapes("logginStyle").Line.Visible = msoFalse
+    If (user = "") Then
+        user = ws.OLEObjects("TextBox1").Object.Value
+        pass = ws.OLEObjects("TextBox2").Object.Value
     End If
+    
+    Set rng = buscaAcesso(user)
+    
+    If (rng Is Nothing) Then
+        MsgBox "Usuario/senha invalidos!"
+        Exit Sub
+    End If
+        
+    arr = rng.Value
+    
+    If (arr(1, 2) <> pass) Then
+        MsgBox "Usuario/senha invalidos!"
+        Exit Sub
+    End If
+    
+    Call planAccess(arr, rng(1, 4))
     
 End Sub
 
@@ -56,28 +61,34 @@ Sub logout()
             ws.Visible = xlSheetVeryHidden
         End If
     Next
+    With Sheets("empty")
+        .Visible = xlSheetVisible
+        .Activate
+    End With
     Range("actv") = ""
     Application.ScreenUpdating = True
     
 End Sub
 
-Function buscaAcesso(user As String, ByRef tp As Integer) As String
+Function buscaAcesso(user As String) As Range
     Dim i As Integer
     Dim tbl As ListObject
-    Set tbl = Sheets("Usuarios").ListObjects(1)
+    Dim arr As Variant
     
-    buscaAcesso = "-1"
-    For i = 1 To tbl.ListRows.Count + 1
-        If (tbl.Range(i, 1) = LCase(user)) Then
-            tp = tbl.Range(i, 3)
-            buscaAcesso = tbl.Range(i, 2)
+    Set tbl = Sheets("Usuarios").ListObjects(1)
+    arr = tbl.DataBodyRange.Value2
+    
+    Set buscaAcesso = Nothing
+    For i = 1 To UBound(arr, 1)
+        If (arr(i, 1) = LCase(user)) Then
+            Set buscaAcesso = tbl.ListRows(i).Range
             Exit For
         End If
     Next
 End Function
 
 Sub anotherPass()
-    With logForm
+    With logginForm
         If (.aviso.Visible = True) Then
             .aviso.Visible = False
             .Height = .Height - 20
@@ -89,7 +100,7 @@ Sub anotherPass()
 End Sub
 
 Sub invalidPass()
-    With logForm
+    With logginForm
         .Height = .Height + 20
         .aviso.Top = .logginBtn.Top - 4
         .logginBtn.Top = .logginBtn.Top + 20
@@ -98,10 +109,14 @@ Sub invalidPass()
     End With
 End Sub
 
-Sub planAccess(user As String, tp As Integer)
+Sub planAccess(arr As Variant, lastAccs As Range)
     Dim ws As Worksheet
+    Dim usrRange As Range
+    Dim user As String
     
-    Unload logForm
+    Set usrRange = Range("actv")
+    
+    Unload logginForm
     
     Application.ScreenUpdating = False
     
@@ -111,7 +126,7 @@ Sub planAccess(user As String, tp As Integer)
         End If
     Next
     
-    If (tp = 3) Then
+    If (arr(1, 3) = 3 Or arr(1, 1) = "admin") Then
         Sheets("Usuarios").Visible = xlSheetVisible
         Sheets("Acesso").Visible = xlSheetHidden
         Sheets("Acesso").Unprotect
@@ -120,11 +135,19 @@ Sub planAccess(user As String, tp As Integer)
         Sheets("Acesso").Visible = xlSheetVeryHidden
         ActiveWindow.DisplayVerticalScrollBar = True
     End If
-    Range("actv") = UCase(user)
+    usrRange = UCase(arr(1, 1))
+    
+    If (lastAccs.Value <> Date) Then
+        If (arr(1, 1) = "admin") Then
+            MsgBox "Bem vindo Administrador!", vbInformation, "Mensagem de Boas-Vindas"
+        Else
+            user = UCase(Left(arr(1, 1), 1)) & Right(arr(1, 1), Len(arr(1, 1)) - 1)
+            MsgBox "Bem vindo " & user & "!", vbInformation, "Mensagem de Boas-Vindas"
+        End If
+    End If
+    lastAccs = Date
     
     Application.ScreenUpdating = True
     Application.CalculateFull
-    
-    'MsgBox "Bem vindo " & UCase(user) & "!"
     
 End Sub

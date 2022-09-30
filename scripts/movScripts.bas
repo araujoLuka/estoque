@@ -9,7 +9,6 @@ Option Explicit
 ' Inicializa a movimentacao de estoque
 Sub iniciaMovimentacao()
     
-    On Error Resume Next
     movForm.Show
 
 End Sub
@@ -103,7 +102,7 @@ Sub regMovimentacao(vet As Variant)
     Call remIcon_add(ws, prodRow, cTabble.ListRows.Count, 1)
 End Sub
 
-Sub remMov(ByVal nm As String, Optional ByVal r1 As Integer)
+Sub removeMovim(ByVal nm As String, Optional ByVal r1 As Integer)
     Dim ws As Worksheet
     Dim tbl As ListObject
     Dim rng1 As Range, rng2 As Range
@@ -125,7 +124,7 @@ Sub remMov(ByVal nm As String, Optional ByVal r1 As Integer)
         tp = "Entrada"
     End If
     
-    r2 = buscaMov(tp, arr(1, 1), arr(1, 2), arr(1, 6))
+    r2 = buscaMovim(tp, arr(1, 1), arr(1, 2), arr(1, 6))
     Set rng2 = Sheets(tp).ListObjects(1).ListRows(r2).Range
         
     Call ajustaIcon(ws, r1, nm)
@@ -136,7 +135,7 @@ Sub remMov(ByVal nm As String, Optional ByVal r1 As Integer)
 
 End Sub
 
-Function buscaMov(ws_n As String, ByVal x1 As Long, _
+Function buscaMovim(ws_n As String, ByVal x1 As Long, _
                   ByVal x2 As Double, ByVal x3 As Long) _
 As Integer
     Dim ws As Worksheet
@@ -151,7 +150,7 @@ As Integer
     a = 1
     b = tbl.ListRows.Count
 
-    arr1 = tbl.ListColumns(1).Range.Value2
+    arr1 = tbl.ListColumns(1).DataBodyRange.Value2
 
     i = bSearch_c(arr1, a, b, x1, 0)
     j = bSearch_c(arr1, i, b, x1, 1)
@@ -161,15 +160,22 @@ As Integer
         r = bSearch_c(arr1, i, j, x2, 0)
         b = bSearch_c(arr1, r, j, x2, 1)
     Else
-        r = i
+        buscaMovim = i
+        Exit Function
     End If
     
-    arr1 = tbl.ListColumns(6).Range.Value2
-    While ((arr1(r + 1, 1) <> x3) And r <= b)
-        r = r + 1
-    Wend
+    If (r < b) Then
+        arr1 = tbl.ListColumns(6).Range.Value2
+        Do While ((arr1(r + 1, 1) <> x3))
+            If (r >= b) Then
+                r = b
+                Exit Do
+            End If
+            r = r + 1
+        Loop
+    End If
     
-    buscaMov = r
+    buscaMovim = r
     
 End Function
 
@@ -207,14 +213,41 @@ Function geraVetorMov(u As UserForm, nm As String, ch As String, _
     
 End Function
 
-Function geraVetorMvm(ch As String, pArray As Variant, qt As String) As Variant
-    Dim vet(0, 0 To 4) As Variant
+Function geraVetorMovXML(ByVal arr As Variant, ByVal nf As String, _
+                         ByVal dt As Date, ByVal tm As Date) As Variant
+    Dim i As Integer, j As Integer
+    Dim mt As String
+    Dim vet(1 To 9) As Variant
+    j = 1
+    mt = "PEDIDO FABRICA - NF " & nf
+
+    vet(j) = dt
+    j = j + 1
+    vet(j) = tm
+    j = j + 1
+    vet(j) = Range("actv").Value
+    j = j + 1
+    vet(j) = "SEM CH"
+    For i = 1 To UBound(arr)
+        vet(j + i) = arr(i)
+    Next
+    j = j + i
+    vet(j) = mt
     
-    vet(0, 0) = ch
-    vet(0, 1) = pArray(1, 2)
-    vet(0, 2) = pArray(1, 4)
-    vet(0, 3) = pArray(1, 5)
-    vet(0, 4) = qt
+    geraVetorMovXML = vet
+    
+End Function
+
+Function geraVetorMvm(ByVal ch As String, ByVal pArray As Variant, _
+                      ByVal qt As String, Optional ByVal tp As Integer = 0) As Variant
+    Dim vet(1 To 5) As Variant
+    
+    vet(1) = ch
+    
+    vet(2) = pArray(1, 2)
+    vet(3) = pArray(1, 4)
+    vet(4) = pArray(1, 5)
+    vet(5) = qt
     
     geraVetorMvm = vet
 End Function
@@ -231,6 +264,8 @@ Function trataMotiv(u As UserForm) As String
         Next
         If (i > 4) Then trataMotiv = .opt_o_txt
     End With
+    
+    trataMotiv = UCase(trataMotiv)
 End Function
 
 Function defineMotiv(userform_name As String, Optional ByVal tp As Integer) As String
@@ -291,7 +326,7 @@ Function defineMotivMult(lst As Variant, ByVal tam As Integer, ByRef mt_e As Str
 
 End Function
 
-Sub deleteAllpCodMov(pCod As Integer)
+Sub removeMovimMult(ByVal pCod As Integer)
     Dim ws As Worksheet
     Dim tbl As ListObject
     Dim arr As Variant
@@ -299,23 +334,30 @@ Sub deleteAllpCodMov(pCod As Integer)
 
     Set ws = Sheets("Controle")
     Set tbl = ws.ListObjects(1)
-    arr = tbl.DataBodyRange.Value2
+    arr = tbl.ListColumns(6).DataBodyRange.Value2
     
-    For i = 1 To tbl.ListRows.Count
-        If (pCod = arr(i, 6)) Then
-            Call remMov("rem_" & i, i)
-        End If
+    For i = UBound(arr, 1) To 1 Step -1
+        If (pCod = arr(i, 1)) Then Call removeMovim("rem_" & i, i)
     Next
 End Sub
 
-Sub insereDadoLista(pList As Object, v As Variant)
+Function insereDadoLista(pList As Object, v As Variant, t As Integer) As Boolean
     Dim p As Integer, i As Integer
-    Dim x As Long
+    Dim x As Integer, c As Integer
     
+    insereDadoLista = False
     With pList
         For p = 0 To .ListCount - 1
-            x = .List(p, 2)
-            If (x = v(0, 2)) Then
+            If (c = 0) Then
+                For c = 0 To .ColumnCount - 2
+                    If (Len(.List(p, c)) <= 5 And IsNumeric(.List(p, c))) Then
+                        Exit For
+                    End If
+                Next
+            End If
+            x = .List(p, c)
+            
+            If (x = v(3 - t)) Then
                 Exit For
             End If
         Next
@@ -323,16 +365,20 @@ Sub insereDadoLista(pList As Object, v As Variant)
         If (p = .ListCount) Then
             .AddItem
             For i = 0 To .ColumnCount - 1
-                .List(p, i) = v(0, i)
+                .List(p, i) = v(i + 1)
             Next
         Else
             i = .ColumnCount - 1
             x = .List(p, i)
-            .List(p, i) = x + CInt(v(0, i))
-            x = .List(p, i)
-            If (x = 0) Then
+            x = x + CInt(v(5 - t))
+            If (x < 0) Then
+                If (Not validaEstoque(-x, getEstoque(v(3 - t)))) Then Exit Function
+            ElseIf (x = 0) Then
                 .RemoveItem (p)
+            Else
+                .List(p, i) = x
             End If
         End If
     End With
-End Sub
+    insereDadoLista = True
+End Function

@@ -21,17 +21,34 @@ Option Explicit
 
 'Comandos ao acessar a planilha
 Private Sub Worksheet_Activate()
-    ' Zoom dinamico no intervalo "view"'
+        
+    ' Desprotege a planilha para fazer alteracao
     Unprotect
+    
+    ' Seleciona o intervalo para zoom dinamico
     Range("view").Select
     With ActiveWindow
-        .Zoom = True
+        .Zoom = True    ' Zoom dinamico no intervalo selecionado
         .DisplayHorizontalScrollBar = False 'Remove a barra de rolagem horizontal
         .DisplayVerticalScrollBar = False   'Remove a barra de rolagem vertical
         .DisplayWorkbookTabs = False        'Remove a aba de planilhas
     End With
+    TextBox1.Activate
+    
+    ' Protege a planilha novamente
     Protect
 
+End Sub
+
+'Comandos ao efetuar loggin
+Private Sub Worksheet_Deactivate()
+    ' Limpa os campos de acesso
+    TextBox1.Value = ""
+    TextBox2.Value = ""
+    
+    ' Reseta o estilo do botao de acesso para o padrao
+    Shapes("logginStyle").Line.Visible = msoFalse
+    
 End Sub
 '-------------------------------------------'
 

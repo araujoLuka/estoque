@@ -8,6 +8,7 @@ Sub scrUpdting()
 End Sub
 
 Sub tglFullScreen()
+Attribute tglFullScreen.VB_ProcData.VB_Invoke_Func = "T\n14"
 
     Application.DisplayFullScreen = Not Application.DisplayFullScreen
 
@@ -90,11 +91,12 @@ Function buscaProduto(ByVal bValue As Variant, ByVal bType As Integer, Optional 
 End Function
 
 Function bSearch_c(arr As Variant, ByVal a As Integer, ByVal b As Integer, ByVal x As Double, t As Integer) As Integer
-    Dim m As Integer
+    Dim m As Integer, mx As Integer
+    mx = b
     
     Select Case t
-    Case 0
-        While (a < b)
+    Case 0 'Procura a primeira ocorrencia
+        Do While (a < b)
             m = ((a + b) / 2)
             m = m + 1 * (m > ((a + b) / 2))
             If (arr(m, 1) < x) Then
@@ -102,20 +104,73 @@ Function bSearch_c(arr As Variant, ByVal a As Integer, ByVal b As Integer, ByVal
             Else
                 b = m
             End If
-        Wend
-    Case 1
-        While (a < b)
+        Loop
+    Case 1 'Procura a ultima ocorrencia
+        Do While (a < b)
             m = ((a + b) / 2)
             m = m + 1 * (m > ((a + b) / 2))
             If (arr(m, 1) <= x) Then
+                If (m = mx) Then Exit Do
+                If (arr(m + 1, 1) > x) Then Exit Do
                 a = m + 1
             Else
                 b = m
             End If
-        Wend
+        Loop
     End Select
     
-    bSearch_c = b
+    If (a < b) Then
+        bSearch_c = m
+    Else
+        bSearch_c = b
+    End If
+End Function
+
+Function countFormTBX(mForm As UserForm) As Integer
+    Dim cCont As Control
+    Dim i As Integer
+    i = 0
+
+    For Each cCont In mForm.Controls
+        If (TypeName(cCont) = "TextBox") And cCont.Name = "box" & i + 1 Then
+            i = i + 1
+        End If
+    Next cCont
+    
+    countFormTBX = i
+End Function
+
+Function trataCodigo(entry As String, ByRef index As Integer, Optional ByRef herd As Boolean) As String
+    Dim cod As String
+    Dim x As Long
+    
+    Select Case Len(entry)
+    Case 1 To 5
+        cod = entry
+        index = 2
+    Case 12
+        cod = Left(entry, 3)
+        herd = True
+        index = 2
+    Case 13
+        cod = entry
+        index = 1
+    Case 14
+        cod = Left(entry, 1) - 6 & Right(Left(entry, 5), 4)
+        herd = True
+        index = 2
+    Case 16
+        x = Bin2Dec(Left(entry, 3))
+        cod = Right(entry, 13) + x
+        If (IsUserFormLoaded("movForm")) Then
+            movForm.box4 = x + 1
+        End If
+        index = 1
+    Case Else
+        cod = ""
+    End Select
+    trataCodigo = cod
+
 End Function
 
 Function validaMovim(ByVal cHerdeiro As String, tipo As Integer) As Boolean
@@ -161,59 +216,12 @@ Function validaMovim(ByVal cHerdeiro As String, tipo As Integer) As Boolean
 
 End Function
 
-Function countFormTBX(mForm As UserForm) As Integer
-    Dim cCont As Control
-    Dim i As Integer
-    i = 0
-
-    For Each cCont In mForm.Controls
-        If (TypeName(cCont) = "TextBox") And cCont.Name = "box" & i + 1 Then
-            i = i + 1
-        End If
-    Next cCont
-    
-    countFormTBX = i
-End Function
-
-Function trataCodigo(entry As String, ByRef index As Integer, Optional ByRef herd As Boolean) As String
-    Dim cod As String
-    Dim x As Long
-    
-    Select Case Len(entry)
-    Case 3, 5
-        cod = entry
-        index = 2
-    Case 12
-        cod = Left(entry, 3)
-        herd = True
-        index = 2
-    Case 13
-        cod = entry
-        index = 1
-    Case 14
-        cod = Left(entry, 1) - 6 & Right(Left(entry, 5), 4)
-        herd = True
-        index = 2
-    Case 16
-        x = Bin2Dec(Left(entry, 3))
-        cod = Right(entry, 13) + x
-        If (IsUserFormLoaded("movForm")) Then
-            movForm.box4 = x + 1
-        End If
-        index = 1
-    Case Else
-        cod = ""
-    End Select
-    trataCodigo = cod
-
-End Function
-
 ' Valida o formulario - retorna verdadeiro se valido ou falso caso contrario
 ' Em caso de falso, imprime em qual campo houve a invalidade
 Function validaForm(uf As UserForm, nm As String, n_box As Integer) As Boolean
     Dim i As Integer
     
-    validaForm = True
+    validaForm = False
     For i = 1 To n_box
         If (uf.Controls("box" & i) = "") Then
             MsgBox "Informacoes de cadastro invalidas!" & _
@@ -221,48 +229,46 @@ Function validaForm(uf As UserForm, nm As String, n_box As Integer) As Boolean
                    vbCrLf & _
                    "Insira o '" & uf.Controls("Label" & i) & "'!", vbExclamation
             uf.Controls("box" & i).SetFocus
-            validaForm = False
             Exit Function
+        End If
+        If (uf.Controls("Label" & i) <> "Produto") Then
+            If (Not IsNumeric(uf.Controls("box" & i)) And Not uf.Controls("box" & i) Like "SEM*") Then
+                MsgBox "Informacoes de cadastro invalidas!" & _
+                       vbCrLf & _
+                       vbCrLf & _
+                       "O campo '" & uf.Controls("Label" & i) & "' deve ser numerico!", vbExclamation
+                Exit Function
+            End If
+        Else
+            If (IsNumeric(uf.Controls("box" & i))) Then
+                MsgBox "Informacoes de cadastro invalidas!" & _
+                       vbCrLf & _
+                       vbCrLf & _
+                       "O campo '" & uf.Controls("Label" & i) & "' não pode ser numérico!", vbExclamation
+                Exit Function
+            ElseIf (IsNumeric(Left(uf.Controls("box" & i), 1))) Then
+                MsgBox "Informacoes de cadastro invalidas!" & _
+                       vbCrLf & _
+                       vbCrLf & _
+                       "O campo '" & uf.Controls("Label" & i) & "' não pode iniciar com um número!", vbExclamation
+                Exit Function
+            End If
         End If
     Next
     
     If (nm = "movForm" Or nm = "mvmForm") Then
-        If (uf.Controls("box" & i - 1) = 0) Then
-            validaForm = False
-        End If
-        Exit Function
-    End If
-    
-    If (nm = "cadForm") Then
+        If (uf.Controls("box" & i - 1) = 0) Then Exit Function
+    ElseIf (nm = "cadForm") Then
         If (uf.box4 <= 0) Then
             MsgBox "Informacoes de cadastro invalidas!" & _
                    vbCrLf & _
                    vbCrLf & _
                    "Limite de estoque deve ser no minimo 1!", vbExclamation
-            validaForm = False
-        End If
-        Exit Function
-    End If
-    
-    If (Not IsError(uf.Controls("motiv_frame"))) Then
-        For i = 1 To 4
-            If (uf.Controls("opt_" & i)) Then
-                Exit Function
-            End If
-        Next
-        If (i > 4) Then
-            If (uf.opt_o = False) Then
-                MsgBox "Informacoes de cadastro invalidas!" & vbCrLf & _
-                    "Defina um motivo para a movimentacao do estoque!", vbExclamation
-                validaForm = False
-            ElseIf (uf.opt_o_txt = "") Then
-                MsgBox "Informacoes de cadastro invalidas!" & vbCrLf & _
-                    "Para outras motivacoes escreva manualmente", vbExclamation
-                uf.opt_o_txt.SetFocus
-                validaForm = False
-            End If
+            Exit Function
         End If
     End If
+    validaForm = True
+
 End Function
 
 Function validaMotiv(str As String, Optional errors As Integer) As Boolean
@@ -291,9 +297,8 @@ Function validaEstoque(ByVal qtd As Integer, ByVal estq As Integer)
     If (qtd > estq) Then
         MsgBox Prompt:="Quantidade deve ser " & _
                        "menor ou igual ao total disponivel em estoque" & _
-                       vbCrLf & _
-                       vbCrLf & _
-                       "Estoque atual do produto Ã© " & estq, _
+                       vbCrLf & vbCrLf & _
+                       "Estoque atual do produto: " & estq, _
                Buttons:=vbExclamation, _
                Title:="Falha ao registrar saida de mercadoria"
         ret = False
@@ -302,7 +307,6 @@ Function validaEstoque(ByVal qtd As Integer, ByVal estq As Integer)
     
     validaEstoque = ret
 End Function
-
 
 Function IsUserFormLoaded(ByVal UFName As String) As Boolean
     Dim UForm As Object
