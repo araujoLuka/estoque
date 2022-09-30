@@ -7,7 +7,7 @@
 - Corrigido erro em nome de usuario na planilha *Controle*
 - Corrigido falha no modulo *iconScripts* que impedia utilizar as imagens de icones da pasta *resources*
 
-# Adições 2.1.1
+## Adições 2.1.1
 - Novo Sub *importarCadastro* no modulo *cadScripts*
 	- Importa os dados de cadastro e estoque de uma planilha de versão anterior
 - Novo Sub *limparPlanilha* no modulo *functions*
