@@ -33,7 +33,7 @@ Sub criaEstoque()
     
 End Sub
 
-Sub atualizaEstoque(ByVal cod As Integer, ByVal qtd As Variant)
+Sub atualizaEstoque(ByVal cod As Long, ByVal qtd As Variant)
     Dim ws As Worksheet
     Dim eRng As Range
     Dim i As Integer
@@ -54,7 +54,7 @@ Sub atualizaEstoque(ByVal cod As Integer, ByVal qtd As Variant)
     eRng.Cells(1, i) = eRng.Cells(1, i) + qtd
 End Sub
 
-Sub removeEstoque(ByVal pCod As Integer)
+Sub removeEstoque(ByVal pCod As Long)
     Dim ws As Worksheet
     Dim cTabble As ListObject
     Dim arr As Variant
@@ -73,7 +73,7 @@ Sub removeEstoque(ByVal pCod As Integer)
     Next
 End Sub
 
-Function getEstoque(ByVal cod As Integer, Optional sh As Worksheet) As Integer
+Function getEstoque(ByVal cod As Long, Optional sh As Worksheet) As Integer
     Dim rng As Range
     Dim c As Integer
     
@@ -174,10 +174,10 @@ Sub listaCompra()
     
     For i = 1 To UBound(arr, 1)
         If (arr(i, UBound(arr, 2)) Like "COMPRA*") Then
-            aux(0) = arr(i, 3)
-            aux(1) = arr(i, 4)
-            aux(2) = arr(i, 5) - arr(i, 6)
-            aux(3) = WorksheetFunction.Ceiling_Math(arr(i, 5) * 1.2) - arr(i, 6)
+            aux(0) = arr(i, 4)
+            aux(1) = arr(i, 5)
+            aux(2) = arr(i, 6) - arr(i, 7)
+            aux(3) = WorksheetFunction.Ceiling_Math(arr(i, 6) * 1.2) - arr(i, 7)
             lst(tam) = aux
             tam = tam + 1
         End If
@@ -203,10 +203,10 @@ Sub listaEstoqueB()
     
     For i = 1 To UBound(arr, 1)
         If (arr(i, UBound(arr, 2)) Like "ESTOQUE*") Then
-            aux(0) = arr(i, 3)
-            aux(1) = arr(i, 4)
-            aux(2) = arr(i, 6)
-            aux(3) = arr(i, 5)
+            aux(0) = arr(i, 4)
+            aux(1) = arr(i, 5)
+            aux(2) = arr(i, 7)
+            aux(3) = arr(i, 6)
             lst(tam) = aux
             tam = tam + 1
         End If

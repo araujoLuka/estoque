@@ -13,7 +13,7 @@ Sub iniciaLoggin()
 
 End Sub
 
-Sub loggin_A(Optional ByVal user As String, Optional ByVal pass As String)
+Sub loggin_A(ByVal user As String, ByVal pass As String)
     Dim ws As Worksheet
     Dim rng As Range
     Dim arr As Variant
@@ -21,10 +21,10 @@ Sub loggin_A(Optional ByVal user As String, Optional ByVal pass As String)
     Set ws = Sheets("Acesso")
     
     If (user = "") Then
-        user = ws.OLEObjects("TextBox1").Object.Value
-        pass = ws.OLEObjects("TextBox2").Object.Value
+        MsgBox "Usuario/senha invalidos!"
+        Exit Sub
     End If
-    
+        
     Set rng = buscaAcesso(user)
     
     If (rng Is Nothing) Then

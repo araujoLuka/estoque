@@ -254,7 +254,10 @@ Function validaForm(uf As UserForm, nm As String, n_box As Integer) As Boolean
     Next
     
     If (nm = "movForm" Or nm = "mvmForm") Then
-        If (uf.Controls("box" & i - 1) = 0) Then Exit Function
+        If (uf.Controls("box" & i - 1) = 0) Then
+            MsgBox "Impossivel adicionar/subtrair 0(zero) unidades!", vbExclamation
+            Exit Function
+        End If
     ElseIf (nm = "cadForm") Then
         If (uf.box4 <= 0) Then
             MsgBox "Informacoes de cadastro invalidas!" & _

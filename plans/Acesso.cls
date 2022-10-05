@@ -87,7 +87,7 @@ Private Sub TextBox1_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift
     End If
     
     ' Verifica o ENTER
-    If (KeyCode = vbKeyReturn) Then Call loggin_A
+    If (KeyCode = vbKeyReturn) Then Call loggin_A(TextBox1.Value, TextBox2.Value)
 End Sub
 
 'Controle do campo de senha
@@ -102,7 +102,7 @@ Private Sub TextBox2_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shift
     End If
     
     ' Verifica o ENTER
-    If (KeyCode = vbKeyReturn) Then Call loggin_A
+    If (KeyCode = vbKeyReturn) Then Call loggin_A(TextBox1.Value, TextBox2.Value)
 End Sub
 
 'Controle do botao de login
@@ -117,7 +117,7 @@ Private Sub logginBtn_KeyDown(ByVal KeyCode As MSForms.ReturnInteger, ByVal Shif
     End If
     
     ' Verifica o ENTER
-    If (KeyCode = vbKeyReturn) Then Call loggin_A
+    If (KeyCode = vbKeyReturn) Then Call loggin_A(TextBox1.Value, TextBox2.Value)
 End Sub
 '-------------------------------------------'
 

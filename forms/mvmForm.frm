@@ -185,3 +185,10 @@ Private Sub pList_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
 
 End Sub
 
+Private Sub usrBtn_Click()
+    
+    Call iniciaLoggin
+    boxU = Range("actv")
+    
+End Sub
+

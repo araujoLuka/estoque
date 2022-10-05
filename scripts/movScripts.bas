@@ -337,7 +337,7 @@ Function defineMotivMult(lst As Variant, ByVal tam As Integer, ByRef mt_e As Str
 
 End Function
 
-Sub removeMovimMult(ByVal pCod As Integer)
+Sub removeMovimMult(ByVal pCod As Long)
     Dim ws As Worksheet
     Dim tbl As ListObject
     Dim arr As Variant
@@ -384,10 +384,11 @@ Function insereDadoLista(pList As Object, v As Variant, t As Integer) As Boolean
             x = x + CInt(v(5 - t))
             If (x < 0) Then
                 If (Not validaEstoque(-x, getEstoque(v(3 - t)))) Then Exit Function
-            ElseIf (x = 0) Then
-                .RemoveItem (p)
-            Else
+            End If
+            If (x <> 0) Then
                 .List(p, i) = x
+            Else
+                .RemoveItem (p)
             End If
         End If
     End With

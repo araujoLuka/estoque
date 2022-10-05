@@ -62,6 +62,7 @@ Sub movXML()
         
         Call regEntrada(arr)
         Call regMovimentacao(arr)
+        
         Call atualizaEstoque(mat(i)(2), mat(i)(4))
     Next
     

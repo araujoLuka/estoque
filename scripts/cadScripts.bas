@@ -155,7 +155,7 @@ End Sub
 Sub removeProduto(pRow As Range, Optional fast As Boolean, Optional rem_reg As Boolean)
     Dim ws As Worksheet
     Dim cTabble As ListObject
-    Dim pCod As Integer, rw As Integer
+    Dim pCod As Long, rw As Integer
     Dim arr As Variant
     Dim mbx As VbMsgBoxResult
     Dim pNm As String, icon1 As String, icon2 As String

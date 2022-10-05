@@ -151,7 +151,7 @@ End Sub
 
 Private Sub usrBtn_Click()
     
-    Call loggin
+    Call iniciaLoggin
     boxU = Range("actv")
     
 End Sub

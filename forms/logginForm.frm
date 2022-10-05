@@ -44,7 +44,7 @@ Private Sub Label3_Click()
     
     Me.Hide
     us = InputBox("Insira seu nome de usuario:", "Recuperação de Acesso")
-    key = buscaAcesso(us, tp)
+    key = buscaAcesso(us)
     
     If (key = "-1") Then
         MsgBox "Usuario não encontrado!" & vbCrLf & _
